@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "devicemanager"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+Django = "^5.0.3"
+
+
+[tool.poetry.dev-dependencies]
+ruff = "^0.3.2"
+pytest = "^8.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[virtualenvs]
+in-project = true
+options.no-pip = true
+options.no-setuptools = true
