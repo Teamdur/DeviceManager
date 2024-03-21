@@ -1,2 +1,2 @@
 # DeviceManager
-Device Manager web application
+Device Manager web application for Colleague
