@@ -2,7 +2,7 @@
 python = "3.12"
 
 [env.'_'.python]
-venv = { path = ".venv" }
+venv = { path = ".venv", create = true }
 
 [tasks.dev]
 run = "./manage.py runserver"
