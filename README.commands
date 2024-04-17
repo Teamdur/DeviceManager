@@ -1,6 +1,0 @@
-sudo apt install pipx
-mise trust
-mise install
-poetry install
-mise settings set experimental true
-mise run dev

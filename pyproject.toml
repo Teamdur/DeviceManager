@@ -1,25 +1,29 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
 name = "devicemanager"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
 license = "MIT"
 readme = "README.md"
+description = ""
+authors = [
+    { name = "Szymon Kozioł", email = "szymonkoz@student.agh.edu.pl" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "Django~=5.0.3"
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-Django = "^5.0.3"
+[project.optional-dependencies]
+dev = [
+    "pytest~=8.1.1",
+    "pre-commit~=3.7.0",
+    "ruff==0.3.7",
+    "isort==5.13.2",
+    "django-upgrade==1.16.0"
+]
 
-
-[tool.poetry.dev-dependencies]
-ruff = "^0.3.2"
-pytest = "^8.1.1"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[virtualenvs]
-in-project = true
-options.no-pip = true
-options.no-setuptools = true
+[tool.pip-tools]
+generate_hashes = true

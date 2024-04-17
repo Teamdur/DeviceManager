@@ -2,7 +2,53 @@
 python = "3.12"
 
 [env.'_'.python]
-venv = { path = ".venv" }
+venv = { path = ".venv", create = true }
 
 [tasks.dev]
-run = "./manage.py runserver"
+run = "python manage.py runserver"
+description = "Run the development server"
+depends = ["install-deps-dev"]
+
+[tasks.migrate]
+run = "python manage.py migrate"
+description = "Apply database migrations"
+depends = ["install-deps"]
+
+[tasks.make-deps]
+run = "pip-compile"
+description = "Update dependencies"
+sources = ["pyproject.toml"]
+outputs = ["requirements.txt"]
+depends = ["install-pip-tools"]
+
+[tasks.make-deps-dev]
+run = "pip-compile --extra dev -o requirements-dev.txt -c requirements.txt"
+description = "Update dev dependencies"
+depends = ["make-deps", "install-pip-tools"]
+sources = ["pyproject.toml"]
+outputs = ["requirements-dev.txt"]
+
+[tasks.install-deps]
+run = "pip-sync requirements.txt"
+description = "Install dependencies"
+sources = ["requirements.txt"]
+depends = ["install-pip-tools"]
+
+[tasks.install-deps-dev]
+run = "pip-sync requirements-dev.txt"
+description = "Install dev dependencies"
+sources = ["requirements-dev.txt"]
+depends = ["install-pip-tools"]
+
+[tasks.install-pre-commit]
+run = "pre-commit install"
+description = "Install pre-commit git hooks"
+depends = ["install-deps-dev"]
+sources = [".pre-commit-config.yaml"]
+
+[tasks.install-pip-tools]
+run = "pip install pip-tools"
+
+[tasks.setup-dev]
+description = "Setup development environment"
+depends = ["install-deps-dev", "install-pre-commit", "migrate"]
