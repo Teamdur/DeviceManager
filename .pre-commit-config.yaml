@@ -18,16 +18,6 @@ repos:
         name: Linting with Ruff
       - id: ruff-format
         name: Formatting with Ruff
-  - repo: https://github.com/jazzband/pip-tools
-    rev: 7.4.1
-    hooks:
-      - id: pip-compile
-        name: Compile requirements
-        files: pyproject.toml
-      - id: pip-compile
-        name: Compile dev requirements
-        files: pyproject.toml
-        args: [--extra=dev, -orequirements-dev.txt, -crequirements.txt]
   - repo: https://github.com/adamchainz/django-upgrade
     rev: 1.16.0
     hooks:
