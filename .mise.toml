@@ -7,12 +7,16 @@ venv = { path = ".venv", create = true }
 [tasks.dev]
 run = "python manage.py runserver"
 description = "Run the development server"
-depends = ["install-deps-dev"]
+depends = ["install-deps-dev", "docker-dev"]
 
 [tasks.migrate]
 run = "python manage.py migrate"
 description = "Apply database migrations"
 depends = ["install-deps"]
+
+[tasks.docker-dev]
+run = "docker compose up -d"
+description = "Run delopment server in docker"
 
 [tasks.make-deps]
 run = "pip-compile"
