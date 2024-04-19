@@ -7,12 +7,12 @@ venv = { path = ".venv", create = true }
 [tasks.dev]
 run = "python manage.py runserver"
 description = "Run the development server"
-depends = ["install-deps-dev", "docker-dev"]
+depends = ["install-deps-dev"]
 
 [tasks.migrate]
 run = "python manage.py migrate"
 description = "Apply database migrations"
-depends = ["install-deps"]
+depends = ["install-deps", "docker-dev"]
 
 [tasks.docker-dev]
 run = "docker compose up -d"
@@ -53,6 +53,10 @@ sources = [".pre-commit-config.yaml"]
 [tasks.install-pip-tools]
 run = "pip install pip-tools"
 
+[tasks.load-fixtures]
+run = "python manage.py loaddata devicemanager/fixtures/*.yaml"
+depends = ["migrate"]
+
 [tasks.setup-dev]
 description = "Setup development environment"
-depends = ["install-deps-dev", "install-pre-commit", "migrate"]
+depends = ["install-deps-dev", "install-pre-commit", "migrate", "load-fixtures"]
