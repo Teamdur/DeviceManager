@@ -1,0 +1,63 @@
+name: migration-services
+
+x-mariadb-db-credentials: &mariadb-db-credentials
+  MYSQL_ROOT_PASSWORD: root
+  MYSQL_DATABASE: migration
+  MYSQL_USER: migration
+  MYSQL_PASSWORD: migration
+
+x-pg-db-credentials: &pg-db-credentials
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: migration
+
+services:
+  maria-db:
+    image: mariadb:11.3.2
+    volumes:
+      - ../data/mariadb-import:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3306:3306"
+    environment:
+      <<: *mariadb-db-credentials
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--su-mysql",
+          "--connect",
+          "--innodb_initialized",
+        ]
+      start_period: 1m
+      start_interval: 1s
+      interval: 1m
+      timeout: 5s
+      retries: 3
+
+  postgres-db:
+    image: postgres:16.2
+    ports:
+      - "5433:5432"
+    environment:
+      <<: *pg-db-credentials
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -d $${POSTGRES_DB:-migration} -U $${POSTGRES_USER:-postgres}",
+        ]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  pgloader:
+    image: dimitri/pgloader:latest
+    volumes:
+      - ../data:/data:ro
+    command: pgloader /data/pgloader.load
+    depends_on:
+      maria-db:
+        condition: service_healthy
+      postgres-db:
+        condition: service_healthy

@@ -1,0 +1,13 @@
+LOAD DATABASE
+    FROM mysql://root:root@maria-db/migration
+    INTO postgresql://postgres:postgres@postgres-db/migration
+
+WITH
+ NO FOREIGN KEYS,
+ INCLUDE NO DROP,
+ ON ERROR RESUME NEXT
+
+  CAST type datetime to timestamptz
+                drop default drop not null using zero-dates-to-null,
+      type date drop not null drop default using zero-dates-to-null,
+      type enum to text drop not null using empty-string-to-null;
