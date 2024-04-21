@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
+    "devicemanager.users",
 ]
 
 MIDDLEWARE = [
@@ -138,3 +139,59 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+TEST_RUNNER = "devicemanager.testrunner.PytestTestRunner"
+
+AUTH_USER_MODEL = "users.User"
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Device Manager",
+    "site_header": "Device Manager",
+    "site_brand": "Device Manager",
+    "site_logo": "common/img/AGH_logo.png",
+    "site_logo_classes": "img-logo",
+    "custom_css": "common/css/jazzmin.css",
+    "icons": {
+        "users.user": "fas fa-user",
+        "users.displaynamedecorator": "fas fa-solid fa-graduation-cap",
+        "auth.Group": "fas fa-users",
+    },
+    "order_with_respect_to": ["users.User", "users.DisplayNameDecorator"],
+}
+JAZZMIN_SETTINGS["show_ui_builder"] = True
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-orange",
+    "accent": "accent-primary",
+    "navbar": "navbar-success navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": False,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "cyborg",
+    "dark_mode_theme": "cyborg",
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
+}
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]

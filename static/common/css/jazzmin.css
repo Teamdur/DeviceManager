@@ -1,0 +1,22 @@
+.dropdown-header {
+  color: #fff;
+}
+
+.select2-results__option {
+  color: #fff;
+}
+
+.img-logo {
+  box-shadow: none !important;
+}
+
+.dark-mode .related-widget-wrapper select {
+  background-color: #343a40;
+  color: #fff;
+  border-color: #6c757d;
+}
+
+.selector .selector-filter {
+  background-color: #3f474e;
+  color: #999;
+}
