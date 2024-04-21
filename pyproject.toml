@@ -8,12 +8,16 @@ version = "0.1.0"
 license = "MIT"
 readme = "README.md"
 description = ""
-authors = [
-    { name = "Szymon Kozioł", email = "szymonkoz@student.agh.edu.pl" }
-]
+authors = [{ name = "Szymon Kozioł", email = "szymonkoz@student.agh.edu.pl" }]
 requires-python = ">=3.12"
 dependencies = [
-    "Django~=5.0.3"
+    "Django~=5.0.3",
+    "django-environ~=0.11.2",
+    "psycopg[binary]~=3.1.18",
+    "django-extensions~=3.2.3",
+    "bpython~=0.24",
+    "pyyaml~=6.0.1",
+    "django-jazzmin~=3.0.0",
 ]
 
 [project.optional-dependencies]
@@ -22,8 +26,11 @@ dev = [
     "pre-commit~=3.7.0",
     "ruff==0.3.7",
     "isort==5.13.2",
-    "django-upgrade==1.16.0"
+    "django-upgrade==1.16.0",
 ]
 
 [tool.pip-tools]
 generate_hashes = true
+
+[tool.ruff]
+line-length = 120

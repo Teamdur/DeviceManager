@@ -1,0 +1,25 @@
+name: device-manager
+
+x-pg-db-credentials: &pg-db-credentials
+  POSTGRES_USER: ${DB_USER:-postgres}
+  POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+  POSTGRES_DB: ${DB_NAME:-device-manager}
+
+services:
+  database:
+    image: postgres:16.2
+    container_name: device-manager-dev-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - device-manager-dev-db:/var/lib/postgresql/data
+    environment:
+      <<: *pg-db-credentials
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${DB_NAME:-device-manager} -U $${DB_USER:-postgres}"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  device-manager-dev-db:
