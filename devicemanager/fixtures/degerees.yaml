@@ -1,0 +1,44 @@
+- model: users.displaynamedecorator
+  pk: 1
+  fields:
+    decorator: inż.
+- model: users.displaynamedecorator
+  pk: 2
+  fields:
+    decorator: prof. senior
+- model: users.displaynamedecorator
+  pk: 3
+  fields:
+    decorator: prof.
+- model: users.displaynamedecorator
+  pk: 4
+  fields:
+    decorator: prof. dr hab. inż.
+- model: users.displaynamedecorator
+  pk: 5
+  fields:
+    decorator: prof. dr hab.
+- model: users.displaynamedecorator
+  pk: 6
+  fields:
+    decorator: dr hab. inż.
+- model: users.displaynamedecorator
+  pk: 7
+  fields:
+    decorator: dr hab.
+- model: users.displaynamedecorator
+  pk: 8
+  fields:
+    decorator: dr inż.
+- model: users.displaynamedecorator
+  pk: 9
+  fields:
+    decorator: dr
+- model: users.displaynamedecorator
+  pk: 10
+  fields:
+    decorator: mgr inż.
+- model: users.displaynamedecorator
+  pk: 11
+  fields:
+    decorator: mgr

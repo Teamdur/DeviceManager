@@ -18,6 +18,10 @@ dependencies = [
     "bpython~=0.24",
     "pyyaml~=6.0.1",
     "django-jazzmin~=3.0.0",
+    "django-phonenumber-field~=7.3.0",
+    "phonenumbers~=8.13.35",
+    "django-debug-toolbar~=4.3.0",
+    "django-allauth~=0.61.1"
 ]
 
 [project.optional-dependencies]
@@ -27,6 +31,8 @@ dev = [
     "ruff==0.3.7",
     "isort==5.13.2",
     "django-upgrade==1.16.0",
+    "factory-boy~=3.3.0",
+    "pytest-django~=4.8.0",
 ]
 
 [tool.pip-tools]
@@ -34,3 +40,7 @@ generate_hashes = true
 
 [tool.ruff]
 line-length = 120
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "devicemanager.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
