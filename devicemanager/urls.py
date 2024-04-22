@@ -20,5 +20,6 @@ from django.urls import include, path
 
 urlpatterns = [
     path("__debug__/", include("debug_toolbar.urls")),
+    path("oauth2/accounts/", include("allauth.urls")),
     path("", admin.site.urls),
 ]

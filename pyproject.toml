@@ -20,7 +20,8 @@ dependencies = [
     "django-jazzmin~=3.0.0",
     "django-phonenumber-field~=7.3.0",
     "phonenumbers~=8.13.35",
-    "django-debug-toolbar~=4.3.0"
+    "django-debug-toolbar~=4.3.0",
+    "django-allauth~=0.61.1"
 ]
 
 [project.optional-dependencies]
