@@ -54,7 +54,29 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
+    "allauth.socialaccount.providers.google",
 ]
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": "534939113963-72f2ph3fve2e7q374phrq4cl66r6jetd.apps.googleusercontent.com",
+            "secret": "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",
+            "key": "",
+        },
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+    },
+    "github": {
+        "APP": {"client_id": "cb3e145ad1d73bc4dfe2", "secret": "916cae2335f7a158afe4b93247b85201a444c3c2"},
+        "SCOPE": [
+            "user",
+        ],
+    },
+}
 
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",

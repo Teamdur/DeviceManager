@@ -73,8 +73,12 @@
             </div>
         </div>
     </form>
-     <form action="{% provider_login_url 'github' %}" method="POST">
+    <form action="{% provider_login_url 'github' %}" method="POST">
          {% csrf_token %}
-        <button>Sign up with Github</button>
+         <button class="btn {{ jazzmin_ui.button_classes.secondary }} btn-block">Sign up with Github</button>
+     </form>
+     <form action="{% provider_login_url 'google' %}" method="POST">
+         {% csrf_token %}
+         <button class="btn {{ jazzmin_ui.button_classes.secondary }} btn-block">Sign up with Google</button>
      </form>
 {% endblock %}
