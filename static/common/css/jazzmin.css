@@ -1,22 +1,27 @@
-.dropdown-header {
-  color: #fff;
+.dark-mode .dropdown-header {
+    color: #fff;
 }
 
-.select2-results__option {
-  color: #fff;
+.dark-mode .select2-results__option {
+    color: #fff;
 }
 
 .img-logo {
-  box-shadow: none !important;
+    box-shadow: none !important;
 }
 
 .dark-mode .related-widget-wrapper select {
-  background-color: #343a40;
-  color: #fff;
-  border-color: #6c757d;
+    background-color: #343a40;
+    color: #fff;
+    border-color: #6c757d;
 }
 
-.selector .selector-filter {
-  background-color: #3f474e;
-  color: #999;
+.dark-mode .selector .selector-filter {
+    background-color: #3f474e;
+    color: #999;
+}
+
+.dropdown-menu-scrollable {
+    max-height: 300px;
+    overflow-y: auto;
 }
