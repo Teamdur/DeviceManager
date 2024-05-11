@@ -73,7 +73,10 @@ class UserAdmin(DjangoUserAdmin):
             }
 
         for field in disabled_fields:
-            form.base_fields[field].disabled = True
+            try:
+                form.base_fields[field].disabled = True
+            except KeyError:
+                pass
 
         return form
 

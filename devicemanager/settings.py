@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
 ]
 
-
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
@@ -72,9 +71,7 @@ SOCIALACCOUNT_PROVIDERS = {
     },
     "github": {
         "APP": {"client_id": "cb3e145ad1d73bc4dfe2", "secret": "916cae2335f7a158afe4b93247b85201a444c3c2"},
-        "SCOPE": [
-            "user",
-        ],
+        "SCOPE": ["user", "profile", "email", "oidc"],
     },
 }
 
@@ -94,7 +91,6 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
-
 
 ROOT_URLCONF = "devicemanager.urls"
 
