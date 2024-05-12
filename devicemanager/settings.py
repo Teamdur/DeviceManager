@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
+    "devicemanager.inventory",
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -101,8 +102,8 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                "django.template.context_processors.debug",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
@@ -183,8 +184,28 @@ JAZZMIN_SETTINGS = {
         "users.user": "fas fa-user",
         "users.displaynamedecorator": "fas fa-solid fa-graduation-cap",
         "auth.Group": "fas fa-users",
+        "inventory.building": "fas fa-building",
+        "inventory.device": "fas fa-laptop",
+        "inventory.devicemodel": "fas fa-tablet",
+        "inventory.devicetype": "fas fa-blender-phone",
+        "inventory.faculty": "fas fa-building",
+        "inventory.manufacturer": "fas fa-industry",
+        "inventory.room": "fas fa-door-open",
+        "socialaccount.socialaccount": "fas fa-user",
+        "socialaccount.socialtoken": "fas fa-key",
+        "socialaccount.socialapp": "fas fa-share-alt",
     },
-    "order_with_respect_to": ["users.User", "users.DisplayNameDecorator"],
+    "order_with_respect_to": [
+        "users.User",
+        "users.DisplayNameDecorator",
+        "inventory.device",
+        "inventory.devicemodel",
+        "inventory.devicetype",
+        "inventory.manufacturer",
+        "inventory.faculty",
+        "inventory.building",
+        "inventory.room",
+    ],
 }
 
 JAZZMIN_UI_TWEAKS = {
