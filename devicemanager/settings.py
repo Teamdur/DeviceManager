@@ -59,12 +59,22 @@ INSTALLED_APPS = [
     "devicemanager.inventory",
     "devicemanager.utils",
     "colorfield",
+    "drf_spectacular",
 ]
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"]
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "DeviceManager",
+    "DESCRIPTION": "Application to manage devices in AGH WFiIS",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    # OTHER SETTINGS
 }
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -204,6 +214,7 @@ JAZZMIN_SETTINGS = {
         "socialaccount.socialaccount": "fas fa-user",
         "socialaccount.socialtoken": "fas fa-key",
         "socialaccount.socialapp": "fas fa-share-alt",
+        "account.emailaddress": "fas fa-at",
     },
     "order_with_respect_to": [
         "users.User",

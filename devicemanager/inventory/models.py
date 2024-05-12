@@ -1,6 +1,8 @@
-from typing import Iterable
+from typing import Iterable, Optional
 
 from colorfield.fields import ColorField
+from distlib.util import cached_property
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Index
 from django.db.models.functions import Lower
@@ -10,6 +12,7 @@ from django_lifecycle.conditions import WhenFieldValueChangesTo
 
 from devicemanager.users.models import User
 from devicemanager.utils.fields import ListJSONField
+from devicemanager.utils.units import UnitConverter
 
 
 class Faculty(models.Model):
@@ -131,8 +134,10 @@ class Device(models.Model):
     def default_labels_include():
         return list(choice[0] for choice in Device.LABELS_CHOICES)
 
-    def get_print_label(self, include_labels: Iterable[str] | None = None) -> str:
-        qrcode_config = QRCodeGenerationConfig.get_active_configuration()
+    def get_print_label(
+        self, include_labels: Iterable[str] | None = None, config: Optional["QRCodeGenerationConfig"] = None
+    ) -> str:
+        qrcode_config = config or QRCodeGenerationConfig.get_active_configuration()
         if include_labels is None:
             include_labels = qrcode_config.included_labels
 
@@ -149,8 +154,12 @@ class Device(models.Model):
 
 class QRCodeGenerationConfig(LifecycleModel):
     id = models.AutoField(primary_key=True, verbose_name=_("QR Code Generation Config ID"))
-    qr_code_size_cm = models.PositiveIntegerField(verbose_name=_("QR Code Size in cm"), default=5)
-    qr_code_margin_mm = models.PositiveIntegerField(verbose_name=_("QR Code Margin"), default=3)
+    qr_code_size_cm = models.PositiveIntegerField(
+        verbose_name=_("QR Code Size in cm"), default=5, validators=[MinValueValidator(1)]
+    )
+    qr_code_margin_mm = models.PositiveIntegerField(
+        verbose_name=_("QR Code Margin"), default=3, validators=[MinValueValidator(1)]
+    )
     active = models.BooleanField(verbose_name=_("Configuration in use"), default=False)
     fill_color = ColorField(default="#000000", verbose_name=_("Fill Color"))
     back_color = ColorField(default="#FFFFFF", verbose_name=_("Background Color"))
@@ -158,6 +167,13 @@ class QRCodeGenerationConfig(LifecycleModel):
     inventory_number_label = models.CharField(max_length=15, default="IN", verbose_name=_("Inventory Number Label"))
     id_label = models.CharField(max_length=15, default="ID", verbose_name=_("ID Label"))
     included_labels = ListJSONField(verbose_name=_("Included Labels"), default=Device.default_labels_include)
+    print_dpi = models.PositiveIntegerField(default=72, verbose_name=_("Print DPI"), validators=[MinValueValidator(1)])
+    pdf_page_width_mm = models.PositiveIntegerField(
+        default=210, verbose_name=_("PDF Page Width in mm"), validators=[MinValueValidator(100)]
+    )
+    pdf_page_height_mm = models.PositiveIntegerField(
+        default=297, verbose_name=_("PDF Page Height in mm"), validators=[MinValueValidator(100)]
+    )
 
     class Meta:
         verbose_name = _("QR Code Generation Config")
@@ -187,3 +203,14 @@ class QRCodeGenerationConfig(LifecycleModel):
 
     def __str__(self):
         return f"QR Code Generation Config {self.id}"
+
+    @cached_property
+    def unit_converter(self):
+        return UnitConverter(dpi=self.print_dpi)
+
+    @cached_property
+    def pdf_page_width_height_px(self):
+        return (
+            self.unit_converter.mm_to_px(self.pdf_page_width_mm),
+            self.unit_converter.mm_to_px(self.pdf_page_height_mm),
+        )

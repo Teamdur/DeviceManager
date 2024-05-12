@@ -80,4 +80,14 @@ class QRCodeGenerationConfigAdmin(admin.ModelAdmin):
     list_display = ("id", "active", "qr_code_size_cm", "qr_code_margin_mm")
     list_filter = ("active",)
 
+    fieldsets = (
+        (_("QR Code Params"), {"fields": ("active", "qr_code_size_cm", "qr_code_margin_mm")}),
+        (_("PDF Settings"), {"fields": ("pdf_page_width_mm", "pdf_page_height_mm", "print_dpi")}),
+        (_("Colors"), {"fields": ("fill_color", "back_color")}),
+        (
+            _("QR Code Labels"),
+            {"fields": ("serial_number_label", "inventory_number_label", "id_label", "included_labels")},
+        ),
+    )
+
     form = QRCodeGenerationConfigForm

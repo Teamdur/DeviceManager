@@ -1,54 +1,48 @@
 from django.http import FileResponse
-from django.utils.translation import gettext as _
-from rest_framework.exceptions import NotAcceptable, ParseError
+from django.utils.functional import cached_property
+from drf_spectacular.utils import extend_schema
 from rest_framework.generics import GenericAPIView
-from rest_framework.renderers import JSONRenderer
-from rest_framework.views import APIView
 
-from devicemanager.inventory.models import Device
-from devicemanager.inventory.qr_code import QRCodeGenerator
-from devicemanager.inventory.serializers import QRCodeDataSerializer
-
-
-class QueryParamFilterMixin(APIView):
-    lookup_field: str
-
-    def get_filter_params(self):
-        raw_query_params = self.request.query_params.get(self.lookup_field)
-
-        if not raw_query_params:
-            raise NotAcceptable(_("Query parameter {} is required".format(self.lookup_field)))
-
-        try:
-            ids = [int(id) for id in raw_query_params.split(",")]
-        except (ValueError, TypeError):
-            raise ParseError(_("Invalid query parameter {} provided".format(self.lookup_field)))
-
-        if len(ids) == 0:
-            raise NotAcceptable(_("Query parameter {} is required".format(self.lookup_field)))
-
-        return ids
+from devicemanager.inventory.models import Device, QRCodeGenerationConfig
+from devicemanager.inventory.qr_code import QRCodePDFGenerator
+from devicemanager.inventory.serializers import (
+    QRCodeDataSerializer,
+    QRCodeGenerateQuerySerializer,
+)
 
 
-class QRCodeGenerateView(QueryParamFilterMixin, GenericAPIView):
+class QRCodeGenerateView(GenericAPIView):
     queryset = Device.objects.all()
     lookup_field = "ids"
     serializer_class = QRCodeDataSerializer
 
     def get_queryset(self):
-        filter_params = self.get_filter_params()
+        filter_params = self.search_params["ids"]
         qs = self.queryset.filter(pk__in=filter_params)
         return qs
 
+    @cached_property
+    def search_params(self):
+        params = self.request.query_params
+        serializer = QRCodeGenerateQuerySerializer(data=params)
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data
+
+    @cached_property
+    def qr_generation_config(self):
+        stored_config = QRCodeGenerationConfig.get_active_configuration()
+
+        for key, value in self.search_params.items():
+            setattr(stored_config, key, value)
+
+        return stored_config
+
+    @extend_schema(parameters=[QRCodeGenerateQuerySerializer])
     def get(self, request, *args, **kwargs):
         devices = self.get_queryset()
-        serializer = self.get_serializer(devices, many=True)
+        pdf = QRCodePDFGenerator(devices, QRCodeDataSerializer, self.qr_generation_config).run()
 
-        first_device = serializer.data[0]
-        data = JSONRenderer().render(first_device)
-        img = QRCodeGenerator(data).qr_code_png_file(title=devices.first().get_print_label())
-
-        return FileResponse(img, content_type="image/png")
+        return FileResponse(pdf, content_type="application/pdf")
 
 
 qr_code_generate_view = QRCodeGenerateView.as_view()
