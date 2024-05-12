@@ -35,6 +35,9 @@ dev = [
     "pytest-django~=4.8.0",
 ]
 
+[tool.isort]
+profile = "black"
+
 [tool.pip-tools]
 generate_hashes = true
 

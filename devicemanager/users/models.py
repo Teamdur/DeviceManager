@@ -3,6 +3,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
+from devicemanager.helpers.fields import DictJSONField
+
 
 class User(AbstractUser):
     room = models.CharField(max_length=100, blank=True)
@@ -16,6 +18,7 @@ class User(AbstractUser):
         related_name="users",
         verbose_name=_("Degree"),
     )
+    user_preferences = DictJSONField(_("User preferences"), default=dict)
 
     def get_name_decoration(self) -> str:
         return getattr(self.name_decoration, "decorator", "")
