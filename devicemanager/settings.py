@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "devicemanager.inventory",
     "devicemanager.utils",
+    "colorfield",
 ]
 
 REST_FRAMEWORK = {
@@ -198,6 +199,7 @@ JAZZMIN_SETTINGS = {
         "inventory.devicetype": "fas fa-blender-phone",
         "inventory.faculty": "fas fa-building",
         "inventory.manufacturer": "fas fa-industry",
+        "inventory.qrcodegenerationconfig": "fas fa-qrcode",
         "inventory.room": "fas fa-door-open",
         "socialaccount.socialaccount": "fas fa-user",
         "socialaccount.socialtoken": "fas fa-key",
@@ -213,6 +215,7 @@ JAZZMIN_SETTINGS = {
         "inventory.faculty",
         "inventory.building",
         "inventory.room",
+        "inventory.qrcodegenerationconfig",
     ],
 }
 

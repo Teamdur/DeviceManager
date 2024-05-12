@@ -1,10 +1,13 @@
+from django.http import FileResponse
 from django.utils.translation import gettext as _
 from rest_framework.exceptions import NotAcceptable, ParseError
 from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
 from devicemanager.inventory.models import Device
+from devicemanager.inventory.qr_code import QRCodeGenerator
+from devicemanager.inventory.serializers import QRCodeDataSerializer
 
 
 class QueryParamFilterMixin(APIView):
@@ -30,6 +33,7 @@ class QueryParamFilterMixin(APIView):
 class QRCodeGenerateView(QueryParamFilterMixin, GenericAPIView):
     queryset = Device.objects.all()
     lookup_field = "ids"
+    serializer_class = QRCodeDataSerializer
 
     def get_queryset(self):
         filter_params = self.get_filter_params()
@@ -38,7 +42,13 @@ class QRCodeGenerateView(QueryParamFilterMixin, GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         devices = self.get_queryset()
-        return Response({"message": "QR Code Generated Successfully", "number_of_devices": devices.count()})
+        serializer = self.get_serializer(devices, many=True)
+
+        first_device = serializer.data[0]
+        data = JSONRenderer().render(first_device)
+        img = QRCodeGenerator(data).qr_code_png_file(title=devices.first().get_print_label())
+
+        return FileResponse(img, content_type="image/png")
 
 
 qr_code_generate_view = QRCodeGenerateView.as_view()

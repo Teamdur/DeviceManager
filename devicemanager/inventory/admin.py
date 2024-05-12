@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from devicemanager.inventory.forms import DeviceForm
+from devicemanager.inventory.forms import DeviceForm, QRCodeGenerationConfigForm
 from devicemanager.inventory.models import (
     Building,
     Device,
@@ -12,6 +12,7 @@ from devicemanager.inventory.models import (
     DeviceType,
     Faculty,
     Manufacturer,
+    QRCodeGenerationConfig,
     Room,
 )
 
@@ -72,3 +73,11 @@ class DeviceAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(
             reverse("inventory:qr-generate") + f"?ids={','.join(str(id) for id in selected_ids)}"
         )
+
+
+@admin.register(QRCodeGenerationConfig)
+class QRCodeGenerationConfigAdmin(admin.ModelAdmin):
+    list_display = ("id", "active", "qr_code_size_cm", "qr_code_margin_mm")
+    list_filter = ("active",)
+
+    form = QRCodeGenerationConfigForm

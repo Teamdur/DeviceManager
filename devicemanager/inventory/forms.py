@@ -24,3 +24,16 @@ class DeviceForm(forms.ModelForm, FormActionItemsMixin):
                 "name": _("Generate QR code"),
             }
         ]
+
+
+class QRCodeGenerationConfigForm(forms.ModelForm):
+    included_labels = forms.MultipleChoiceField(
+        label=_("Included labels"),
+        choices=Device.LABELS_CHOICES,
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    class Meta:
+        model = Device
+        exclude = ("id",)
