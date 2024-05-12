@@ -1,0 +1,112 @@
+- model: inventory.faculty
+  pk: 1
+  fields:
+    full_name: Wydział Fizyki i Informatyki Stosowanej
+    short_name: WFiIS
+- model: inventory.building
+  pk: 1
+  fields:
+    name: D-10
+    faculty: 1
+- model: inventory.building
+  pk: 2
+  fields:
+    name: D-7
+    faculty: 1
+- model: inventory.building
+  pk: 3
+  fields:
+    name: D-11
+    faculty: 1
+- model: inventory.room
+  pk: 1
+  fields:
+    room_number: '127'
+    building: 3
+    description: Office
+    occupants: []
+- model: inventory.room
+  pk: 2
+  fields:
+    room_number: '124'
+    building: 3
+    description: Laboratorium mikroelektroniki
+    occupants: []
+- model: inventory.room
+  pk: 3
+  fields:
+    room_number: '103'
+    building: 3
+    description: Laboratorium RTG
+    occupants: []
+- model: inventory.room
+  pk: 4
+  fields:
+    room_number: '209'
+    building: 1
+    description: Studenckie laboratorium elektroniczne
+    occupants: []
+- model: inventory.room
+  pk: 5
+  fields:
+    room_number: '23'
+    building: 1
+    description: Laboratorium detektorów krzemowych
+    occupants: []
+- model: inventory.room
+  pk: 6
+  fields:
+    room_number: '224'
+    building: 1
+    description: Laboratorium detektorów scyntylacyjnych
+    occupants: []
+- model: inventory.room
+  pk: 7
+  fields:
+    room_number: '16'
+    building: 2
+    description: PRDPJ-Pracownia Radiometrii i Detektorow Promieniowania Jonizujacego
+    occupants: []
+- model: inventory.manufacturer
+  pk: 1
+  fields:
+    name: Dell
+    description: ''
+- model: inventory.manufacturer
+  pk: 2
+  fields:
+    name: HP
+    description: ''
+- model: inventory.manufacturer
+  pk: 3
+  fields:
+    name: Dymo
+    description: ''
+- model: inventory.devicetype
+  pk: 1
+  fields:
+    name: Drukarka
+    short_name: PRN
+- model: inventory.devicetype
+  pk: 2
+  fields:
+    name: Zasilacz
+    short_name: SUP
+- model: inventory.devicetype
+  pk: 3
+  fields:
+    name: Komputer
+    short_name: PC
+- model: inventory.devicemodel
+  pk: 1
+  fields:
+    device_type: 1
+    manufacturer: 3
+    name: LabelWriter 450
+    description: ''
+- model: inventory.device
+  pk: 2837b89b-b942-4037-a902-44097b072912
+  fields:
+    model: 1
+    serial_number: 1750111-2232693
+    inventory_number: null
