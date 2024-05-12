@@ -1,5 +1,3 @@
-import uuid
-
 from django.db import models
 from django.db.models import Index
 from django.db.models.functions import Lower
@@ -101,7 +99,7 @@ class DeviceModel(models.Model):
 
 
 class Device(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.AutoField(primary_key=True, verbose_name=_("Device ID"))
     model = models.ForeignKey(DeviceModel, on_delete=models.CASCADE, related_name="devices", verbose_name=_("Model"))
     serial_number = models.CharField(
         max_length=512, null=True, blank=True, unique=True, db_index=True, verbose_name=_("Serial Number")

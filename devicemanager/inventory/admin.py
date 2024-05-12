@@ -53,7 +53,7 @@ class DeviceModelAdmin(admin.ModelAdmin):
 
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
-    list_display = ("uuid", "model", "serial_number", "inventory_number")
+    list_display = ("id", "model", "serial_number", "inventory_number")
     ordering = ("model__name",)
     search_fields = ("uuid", "serial_number", "inventory_number")
     list_filter = ("model__device_type", "model__manufacturer")

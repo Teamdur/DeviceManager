@@ -24,49 +24,49 @@
     room_number: '127'
     building: 3
     description: Office
-    occupants: []
+    occupants: [ ]
 - model: inventory.room
   pk: 2
   fields:
     room_number: '124'
     building: 3
     description: Laboratorium mikroelektroniki
-    occupants: []
+    occupants: [ ]
 - model: inventory.room
   pk: 3
   fields:
     room_number: '103'
     building: 3
     description: Laboratorium RTG
-    occupants: []
+    occupants: [ ]
 - model: inventory.room
   pk: 4
   fields:
     room_number: '209'
     building: 1
     description: Studenckie laboratorium elektroniczne
-    occupants: []
+    occupants: [ ]
 - model: inventory.room
   pk: 5
   fields:
     room_number: '23'
     building: 1
     description: Laboratorium detektorów krzemowych
-    occupants: []
+    occupants: [ ]
 - model: inventory.room
   pk: 6
   fields:
     room_number: '224'
     building: 1
     description: Laboratorium detektorów scyntylacyjnych
-    occupants: []
+    occupants: [ ]
 - model: inventory.room
   pk: 7
   fields:
     room_number: '16'
     building: 2
     description: PRDPJ-Pracownia Radiometrii i Detektorow Promieniowania Jonizujacego
-    occupants: []
+    occupants: [ ]
 - model: inventory.manufacturer
   pk: 1
   fields:
@@ -105,7 +105,7 @@
     name: LabelWriter 450
     description: ''
 - model: inventory.device
-  pk: 2837b89b-b942-4037-a902-44097b072912
+  pk: 1
   fields:
     model: 1
     serial_number: 1750111-2232693
