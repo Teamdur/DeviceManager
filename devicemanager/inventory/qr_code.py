@@ -101,8 +101,8 @@ class QRCodePDFGenerator:
 
     def run(self):
         qr_codes = [self.gen_qr_image(device) for device in self.devices]
-        tile_width = max(qr.width for qr in qr_codes)
-        tile_height = max(qr.height for qr in qr_codes)
+        tile_width = max(qr.size[0] for qr in qr_codes)
+        tile_height = max(qr.size[1] for qr in qr_codes)
 
         num_horizontal_tiles = self.page_width_px // tile_width
         num_vertical_tiles = self.page_height_px // tile_height
