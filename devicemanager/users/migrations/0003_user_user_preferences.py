@@ -2,7 +2,7 @@
 
 from django.db import migrations
 
-import devicemanager.helpers.fields
+import devicemanager.utils.fields
 
 
 class Migration(migrations.Migration):
@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="user",
             name="user_preferences",
-            field=devicemanager.helpers.fields.DictJSONField(default=dict, verbose_name="User preferences"),
+            field=devicemanager.utils.fields.DictJSONField(default=dict, verbose_name="User preferences"),
         ),
     ]

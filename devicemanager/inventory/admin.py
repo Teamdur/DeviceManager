@@ -1,5 +1,10 @@
 from django.contrib import admin
+from django.db.models import QuerySet
+from django.http import HttpRequest, HttpResponseRedirect
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
+from devicemanager.inventory.forms import DeviceForm, QRCodeGenerationConfigForm
 from devicemanager.inventory.models import (
     Building,
     Device,
@@ -7,6 +12,7 @@ from devicemanager.inventory.models import (
     DeviceType,
     Faculty,
     Manufacturer,
+    QRCodeGenerationConfig,
     Room,
 )
 
@@ -53,7 +59,35 @@ class DeviceModelAdmin(admin.ModelAdmin):
 
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
-    list_display = ("uuid", "model", "serial_number", "inventory_number")
+    list_display = ("id", "model", "serial_number", "inventory_number")
     ordering = ("model__name",)
     search_fields = ("uuid", "serial_number", "inventory_number")
     list_filter = ("model__device_type", "model__manufacturer")
+    actions = ["generate_qr_codes"]
+
+    form = DeviceForm
+
+    @admin.action(description=_("Generate QR Codes"))
+    def generate_qr_codes(self, request: HttpRequest, queryset: QuerySet):
+        selected_ids = queryset.values_list("pk", flat=True)
+        return HttpResponseRedirect(
+            reverse("inventory:qr-generate") + f"?ids={','.join(str(id) for id in selected_ids)}"
+        )
+
+
+@admin.register(QRCodeGenerationConfig)
+class QRCodeGenerationConfigAdmin(admin.ModelAdmin):
+    list_display = ("id", "active", "qr_code_size_cm", "qr_code_margin_mm")
+    list_filter = ("active",)
+
+    fieldsets = (
+        (_("QR Code Params"), {"fields": ("active", "qr_code_size_cm", "qr_code_margin_mm")}),
+        (_("PDF Settings"), {"fields": ("pdf_page_width_mm", "pdf_page_height_mm", "print_dpi")}),
+        (_("Colors"), {"fields": ("fill_color", "back_color")}),
+        (
+            _("QR Code Labels"),
+            {"fields": ("serial_number_label", "inventory_number_label", "id_label", "included_labels")},
+        ),
+    )
+
+    form = QRCodeGenerationConfigForm

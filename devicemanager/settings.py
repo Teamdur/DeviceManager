@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     "debug_toolbar",
+    "rest_framework",
     "devicemanager.users",
     "allauth",
     "allauth.account",
@@ -56,7 +57,25 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
     "devicemanager.inventory",
+    "devicemanager.utils",
+    "colorfield",
+    "drf_spectacular",
 ]
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "DeviceManager",
+    "DESCRIPTION": "Application to manage devices in AGH WFiIS",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    # OTHER SETTINGS
+}
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
@@ -190,10 +209,12 @@ JAZZMIN_SETTINGS = {
         "inventory.devicetype": "fas fa-blender-phone",
         "inventory.faculty": "fas fa-building",
         "inventory.manufacturer": "fas fa-industry",
+        "inventory.qrcodegenerationconfig": "fas fa-qrcode",
         "inventory.room": "fas fa-door-open",
         "socialaccount.socialaccount": "fas fa-user",
         "socialaccount.socialtoken": "fas fa-key",
         "socialaccount.socialapp": "fas fa-share-alt",
+        "account.emailaddress": "fas fa-at",
     },
     "order_with_respect_to": [
         "users.User",
@@ -205,6 +226,7 @@ JAZZMIN_SETTINGS = {
         "inventory.faculty",
         "inventory.building",
         "inventory.room",
+        "inventory.qrcodegenerationconfig",
     ],
 }
 

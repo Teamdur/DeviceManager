@@ -1,11 +1,18 @@
-import uuid
+from typing import Iterable, Optional
 
+from colorfield.fields import ColorField
+from distlib.util import cached_property
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Index
 from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
+from django_lifecycle import BEFORE_CREATE, BEFORE_UPDATE, LifecycleModel, hook
+from django_lifecycle.conditions import WhenFieldValueChangesTo
 
 from devicemanager.users.models import User
+from devicemanager.utils.fields import ListJSONField
+from devicemanager.utils.units import UnitConverter
 
 
 class Faculty(models.Model):
@@ -101,7 +108,7 @@ class DeviceModel(models.Model):
 
 
 class Device(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.AutoField(primary_key=True, verbose_name=_("Device ID"))
     model = models.ForeignKey(DeviceModel, on_delete=models.CASCADE, related_name="devices", verbose_name=_("Model"))
     serial_number = models.CharField(
         max_length=512, null=True, blank=True, unique=True, db_index=True, verbose_name=_("Serial Number")
@@ -116,3 +123,94 @@ class Device(models.Model):
 
     def __str__(self):
         return f"{self.model} {self.inventory_number}"
+
+    LABELS_CHOICES = (
+        ("serial_number", _("Serial Number")),
+        ("inventory_number", _("Inventory Number")),
+        ("id", _("ID")),
+    )
+
+    @staticmethod
+    def default_labels_include():
+        return list(choice[0] for choice in Device.LABELS_CHOICES)
+
+    def get_print_label(
+        self, include_labels: Iterable[str] | None = None, config: Optional["QRCodeGenerationConfig"] = None
+    ) -> str:
+        qrcode_config = config or QRCodeGenerationConfig.get_active_configuration()
+        if include_labels is None:
+            include_labels = qrcode_config.included_labels
+
+        labels = {
+            "serial_number": (qrcode_config.serial_number_label, self.serial_number),
+            "inventory_number": (qrcode_config.inventory_number_label, self.inventory_number),
+            "id": (qrcode_config.id_label, self.id),
+        }
+
+        return "\n".join(
+            f"{labels[label][0]}: {str(labels[label][1] or '')}" for label in include_labels if label in labels
+        )
+
+
+class QRCodeGenerationConfig(LifecycleModel):
+    id = models.AutoField(primary_key=True, verbose_name=_("QR Code Generation Config ID"))
+    qr_code_size_cm = models.PositiveIntegerField(
+        verbose_name=_("QR Code Size in cm"), default=5, validators=[MinValueValidator(1)]
+    )
+    qr_code_margin_mm = models.PositiveIntegerField(
+        verbose_name=_("QR Code Margin"), default=3, validators=[MinValueValidator(1)]
+    )
+    active = models.BooleanField(verbose_name=_("Configuration in use"), default=False)
+    fill_color = ColorField(default="#000000", verbose_name=_("Fill Color"))
+    back_color = ColorField(default="#FFFFFF", verbose_name=_("Background Color"))
+    serial_number_label = models.CharField(max_length=15, default="SN", verbose_name=_("Serial Number Label"))
+    inventory_number_label = models.CharField(max_length=15, default="IN", verbose_name=_("Inventory Number Label"))
+    id_label = models.CharField(max_length=15, default="ID", verbose_name=_("ID Label"))
+    included_labels = ListJSONField(verbose_name=_("Included Labels"), default=Device.default_labels_include)
+    print_dpi = models.PositiveIntegerField(default=72, verbose_name=_("Print DPI"), validators=[MinValueValidator(1)])
+    pdf_page_width_mm = models.PositiveIntegerField(
+        default=210, verbose_name=_("PDF Page Width in mm"), validators=[MinValueValidator(100)]
+    )
+    pdf_page_height_mm = models.PositiveIntegerField(
+        default=297, verbose_name=_("PDF Page Height in mm"), validators=[MinValueValidator(100)]
+    )
+
+    class Meta:
+        verbose_name = _("QR Code Generation Config")
+        verbose_name_plural = _("QR Code Generation Configs")
+
+    @hook(
+        BEFORE_UPDATE,
+        condition=WhenFieldValueChangesTo("active", True),
+    )
+    def update_disables_other_configs(self):
+        QRCodeGenerationConfig.objects.filter(active=True).update(active=False)
+        self.active = True
+
+    @hook(
+        BEFORE_CREATE,
+    )
+    def ensure_one_active_config_present(self):
+        active_config_count = QRCodeGenerationConfig.objects.filter(active=True).count()
+        if active_config_count == 0:
+            self.active = True
+        elif self.active:
+            QRCodeGenerationConfig.objects.filter(active=True).update(active=False)
+
+    @staticmethod
+    def get_active_configuration():
+        return QRCodeGenerationConfig.objects.get_or_create(active=True)[0]
+
+    def __str__(self):
+        return f"QR Code Generation Config {self.id}"
+
+    @cached_property
+    def unit_converter(self):
+        return UnitConverter(dpi=self.print_dpi)
+
+    @cached_property
+    def pdf_page_width_height_px(self):
+        return (
+            self.unit_converter.mm_to_px(self.pdf_page_width_mm),
+            self.unit_converter.mm_to_px(self.pdf_page_height_mm),
+        )
