@@ -284,8 +284,10 @@ django==5.0.4 \
     #   django-allauth
     #   django-debug-toolbar
     #   django-extensions
+    #   django-filter
     #   django-jazzmin
     #   django-phonenumber-field
+    #   djangorestframework
 django-allauth==0.61.1 \
     --hash=sha256:5b4ae515ea74f54f0041210692eee10c309ad15ddbbd03d3620693c75e3f7945
     # via
@@ -309,6 +311,12 @@ django-extensions==3.2.3 \
     # via
     #   -c requirements.txt
     #   devicemanager (pyproject.toml)
+django-filter==24.2 \
+    --hash=sha256:48e5fc1da3ccd6ca0d5f9bb550973518ce977a4edde9d2a8a154a7f4f0b9f96e \
+    --hash=sha256:df2ee9857e18d38bed203c8745f62a803fa0f31688c9fe6f8e868120b1848e48
+    # via
+    #   -c requirements.txt
+    #   devicemanager (pyproject.toml)
 django-jazzmin==3.0.0 \
     --hash=sha256:424ac3e0f7bfd9ce973b581a66abde92035ba6c5b17605615fdf6bd97c4dcb33 \
     --hash=sha256:95ef5d7571519c4c53c24083ec417a0db126aaf1d7dc7311e034a90e430392b3
@@ -325,6 +333,12 @@ django-upgrade==1.16.0 \
     --hash=sha256:605708b130368ee6dd304df00253f184a7c2f00d1c2dd5d4dac41a31307a2a14 \
     --hash=sha256:7e473e8ecf234a531448d4a0c1c772746fa831fc762eae3d7578f13f6d847370
     # via devicemanager (pyproject.toml)
+djangorestframework==3.15.1 \
+    --hash=sha256:3ccc0475bce968608cf30d07fb17d8e52d1d7fc8bfe779c905463200750cbca6 \
+    --hash=sha256:f88fad74183dfc7144b2756d0d2ac716ea5b4c7c9840995ac3bfd8ec034333c1
+    # via
+    #   -c requirements.txt
+    #   devicemanager (pyproject.toml)
 factory-boy==3.3.0 \
     --hash=sha256:a2cdbdb63228177aa4f1c52f4b6d83fab2b8623bf602c7dedd7eb83c0f69c04c \
     --hash=sha256:bc76d97d1a65bbd9842a6d722882098eb549ec8ee1081f9fb2e8ff29f0c300f1
@@ -417,6 +431,12 @@ isort==5.13.2 \
     --hash=sha256:48fdfcb9face5d58a4f6dde2e72a1fb8dcaf8ab26f95ab49fab84c2ddefb0109 \
     --hash=sha256:8ca5e72a8d85860d5a3fa69b8745237f2939afe12dbf656afbcb47fe72d947a6
     # via devicemanager (pyproject.toml)
+markdown==3.6 \
+    --hash=sha256:48f276f4d8cfb8ce6527c8f79e2ee29708508bf4d40aa410fbc3b4ee832c850f \
+    --hash=sha256:ed4f41f6daecbeeb96e576ce414c41d2d876daa9a16cb35fa8ed8c2ddfad0224
+    # via
+    #   -c requirements.txt
+    #   devicemanager (pyproject.toml)
 nodeenv==1.8.0 \
     --hash=sha256:d51e0c37e64fbf47d017feac3145cdbb58836d7eee8c6f6d3b6880c5456227d2 \
     --hash=sha256:df865724bb3c3adc86b3876fa209771517b0cfe596beff01a92700e0e8be4cec

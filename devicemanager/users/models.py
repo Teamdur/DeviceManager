@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
-from devicemanager.helpers.fields import DictJSONField
+from devicemanager.utils.fields import DictJSONField
 
 
 class User(AbstractUser):

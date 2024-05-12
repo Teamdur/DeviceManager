@@ -5,5 +5,6 @@ urlpatterns = [
     path("__debug__/", include("debug_toolbar.urls")),
     path("oauth2/accounts/", include("allauth.urls")),
     path("users/", include("devicemanager.users.urls", namespace="users")),
+    path("inventory/", include("devicemanager.inventory.urls", namespace="inventory")),
     path("", admin.site.urls),
 ]

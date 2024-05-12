@@ -1,5 +1,10 @@
 from django.contrib import admin
+from django.db.models import QuerySet
+from django.http import HttpRequest, HttpResponseRedirect
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
+from devicemanager.inventory.forms import DeviceForm
 from devicemanager.inventory.models import (
     Building,
     Device,
@@ -57,3 +62,13 @@ class DeviceAdmin(admin.ModelAdmin):
     ordering = ("model__name",)
     search_fields = ("uuid", "serial_number", "inventory_number")
     list_filter = ("model__device_type", "model__manufacturer")
+    actions = ["generate_qr_codes"]
+
+    form = DeviceForm
+
+    @admin.action(description=_("Generate QR Codes"))
+    def generate_qr_codes(self, request: HttpRequest, queryset: QuerySet):
+        selected_ids = queryset.values_list("pk", flat=True)
+        return HttpResponseRedirect(
+            reverse("inventory:qr-generate") + f"?ids={','.join(str(id) for id in selected_ids)}"
+        )

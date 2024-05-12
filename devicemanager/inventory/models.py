@@ -114,3 +114,10 @@ class Device(models.Model):
 
     def __str__(self):
         return f"{self.model} {self.inventory_number}"
+
+
+# class QRCodeGenerationConfig(models.Model):
+#     id = models.AutoField(primary_key=True, verbose_name=_("QR Code Generation Config ID"))
+#     page_width_mm = models.PositiveIntegerField(default=210, verbose_name=_("Page Width (mm)"))
+#     page_height_mm = models.PositiveIntegerField(default=297, verbose_name=_("Page Height (mm)"))
+#     qr_code_size_mm = models.PositiveIntegerField(default=30, verbose_name=_("QR Code Size (mm)"))
