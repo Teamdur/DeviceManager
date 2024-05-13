@@ -2,12 +2,28 @@ from django.http import FileResponse
 from django.utils.functional import cached_property
 from drf_spectacular.utils import extend_schema
 from rest_framework.generics import GenericAPIView
+from rest_framework.viewsets import ModelViewSet
 
-from devicemanager.inventory.models import Device, QRCodeGenerationConfig
+from devicemanager.inventory.models import (
+    Building,
+    Device,
+    DeviceModel,
+    DeviceType,
+    Faculty,
+    Manufacturer,
+    QRCodeGenerationConfig,
+    Room,
+)
 from devicemanager.inventory.qr_code import QRCodePDFGenerator
 from devicemanager.inventory.serializers import (
+    BuildingSerializer,
+    DeviceModelSerializer,
+    DeviceTypeSerializer,
+    FacultySerializer,
+    ManufacturerSerializer,
     QRCodeDataSerializer,
     QRCodeGenerateQuerySerializer,
+    RoomSerializer,
 )
 
 
@@ -45,4 +61,36 @@ class QRCodeGenerateView(GenericAPIView):
         return FileResponse(pdf, content_type="application/pdf")
 
 
-qr_code_generate_view = QRCodeGenerateView.as_view()
+class FacultyViewSet(ModelViewSet):
+    queryset = Faculty.objects.all()
+    serializer_class = FacultySerializer
+
+
+class BuildingViewSet(ModelViewSet):
+    queryset = Building.objects.all()
+    serializer_class = BuildingSerializer
+
+
+class RoomViewSet(ModelViewSet):
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+
+
+class ManufacturerViewSet(ModelViewSet):
+    queryset = Manufacturer.objects.all()
+    serializer_class = ManufacturerSerializer
+
+
+class DeviceTypeViewSet(ModelViewSet):
+    queryset = DeviceType.objects.all()
+    serializer_class = DeviceTypeSerializer
+
+
+class DeviceModelViewSet(ModelViewSet):
+    queryset = DeviceModel.objects.all()
+    serializer_class = DeviceModelSerializer
+
+
+class DeviceViewSet(ModelViewSet):
+    queryset = Device.objects.all()
+    serializer_class = QRCodeDataSerializer

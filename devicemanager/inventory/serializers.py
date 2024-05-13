@@ -3,7 +3,17 @@ from typing import NotRequired, TypedDict
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
 
-from devicemanager.inventory.models import Device, QRCodeGenerationConfig
+from devicemanager.inventory.api_views import Faculty
+from devicemanager.inventory.models import (
+    Building,
+    Device,
+    DeviceModel,
+    DeviceType,
+    Manufacturer,
+    QRCodeGenerationConfig,
+    Room,
+)
+from devicemanager.users.models import User
 from devicemanager.utils.serializers import CharacterSeperatedField
 
 
@@ -59,3 +69,60 @@ class QRCodeDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
         fields = ["id", "serial_number", "inventory_number"]
+
+
+class FacultySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Faculty
+        fields = ["id", "full_name", "short_name"]
+
+
+class BuildingSerializer(serializers.ModelSerializer):
+    faculty = serializers.PrimaryKeyRelatedField(many=True, queryset=Faculty.objects.all())
+
+    class Meta:
+        model = Building
+        fields = ["id", "name", "faculty"]
+
+
+class RoomSerializer(serializers.ModelSerializer):
+    building = serializers.PrimaryKeyRelatedField(many=False, queryset=Building.objects.all())
+    occupants = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
+
+    class Meta:
+        model = Room
+        fields = ["id", "room_number", "building", "description", "occupants"]
+
+
+class ManufacturerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Manufacturer
+        fields = ["id", "name", "description"]
+
+
+class DeviceTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeviceType
+        fields = ["id", "name", "short_name"]
+
+
+class DeviceModelSerializer(serializers.ModelSerializer):
+    device_type = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceType.objects.all())
+    manufacturer = serializers.PrimaryKeyRelatedField(many=False, queryset=Manufacturer.objects.all())
+
+    class Meta:
+        model = DeviceModel
+        fields = ["id", "device_type", "manufacturer", "name", "description"]
+
+
+class DeviceSerializer(serializers.ModelSerializer):
+    model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects.all())
+
+    class Meta:
+        model = Device
+        fields = [
+            "id",
+            "model",
+            "serial_number",
+            "inventory_number",
+        ]
