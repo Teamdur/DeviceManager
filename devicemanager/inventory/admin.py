@@ -4,11 +4,17 @@ from django.http import HttpRequest, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from devicemanager.inventory.forms import DeviceForm, QRCodeGenerationConfigForm
+from devicemanager.inventory.forms import (
+    DeviceForm,
+    DeviceRentalForm,
+    QRCodeGenerationConfigForm,
+)
+from devicemanager.inventory.formsets import DeviceRentalFormSet
 from devicemanager.inventory.models import (
     Building,
     Device,
     DeviceModel,
+    DeviceRental,
     DeviceType,
     Faculty,
     Manufacturer,
@@ -57,6 +63,12 @@ class DeviceModelAdmin(admin.ModelAdmin):
     list_filter = ("device_type", "manufacturer")
 
 
+class DeviceRentalInline(admin.StackedInline):
+    model = DeviceRental
+    extra = 1
+    formset = DeviceRentalFormSet
+
+
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
     list_display = ("id", "model", "serial_number", "inventory_number")
@@ -64,6 +76,7 @@ class DeviceAdmin(admin.ModelAdmin):
     search_fields = ("uuid", "serial_number", "inventory_number")
     list_filter = ("model__device_type", "model__manufacturer")
     actions = ["generate_qr_codes"]
+    inlines = [DeviceRentalInline]
 
     form = DeviceForm
 
@@ -91,3 +104,15 @@ class QRCodeGenerationConfigAdmin(admin.ModelAdmin):
     )
 
     form = QRCodeGenerationConfigForm
+
+
+@admin.register(DeviceRental)
+class DeviceRentalAdmin(admin.ModelAdmin):
+    list_display = ("id", "device", "is_rented", "borrower", "rental_date", "return_date")
+    ordering = ("rental_date",)
+
+    form = DeviceRentalForm
+
+    @admin.display(description=_("Is rented"), boolean=True)
+    def is_rented(self, obj: DeviceRental) -> bool:
+        return obj.return_date is None

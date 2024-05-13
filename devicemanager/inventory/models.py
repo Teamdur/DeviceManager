@@ -7,11 +7,18 @@ from django.db import models
 from django.db.models import Index
 from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
-from django_lifecycle import BEFORE_CREATE, BEFORE_UPDATE, LifecycleModel, hook
-from django_lifecycle.conditions import WhenFieldValueChangesTo
+from django_lifecycle import (
+    BEFORE_CREATE,
+    BEFORE_SAVE,
+    BEFORE_UPDATE,
+    LifecycleModel,
+    hook,
+)
+from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldValueIs
 
 from devicemanager.users.models import User
 from devicemanager.utils.fields import ListJSONField
+from devicemanager.utils.models import TimeTrackable
 from devicemanager.utils.units import UnitConverter
 
 
@@ -214,3 +221,24 @@ class QRCodeGenerationConfig(LifecycleModel):
             self.unit_converter.mm_to_px(self.pdf_page_width_mm),
             self.unit_converter.mm_to_px(self.pdf_page_height_mm),
         )
+
+
+class DeviceRental(TimeTrackable, LifecycleModel):
+    id = models.AutoField(primary_key=True)
+    device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name="rentals", verbose_name=_("Device"))
+    borrower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="rentals", verbose_name=_("Borrower"))
+    rental_date = models.DateField(auto_now_add=True, verbose_name=_("Rental Date"))
+    return_date = models.DateField(null=True, blank=True, verbose_name=_("Return Date"))
+
+    class Meta:
+        verbose_name = _("Device Rental")
+        verbose_name_plural = _("Device Rentals")
+
+    @hook(BEFORE_SAVE, condition=WhenFieldValueIs("return_date", None))
+    def ensure_device_is_rented_once(self):
+        other_device_rentals = DeviceRental.objects.filter(device=self.device, return_date=None).exclude(pk=self.pk)
+        if other_device_rentals.exists():
+            raise ValueError("Device is already rented")
+
+    def __str__(self):
+        return f"{self.device} - {self.borrower}"
