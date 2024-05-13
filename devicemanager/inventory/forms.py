@@ -2,12 +2,11 @@ from django import forms
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from devicemanager.inventory.models import Device
-from devicemanager.utils.forms import FormActionItemsMixin
+from devicemanager.inventory.models import Device, DeviceRental
 from devicemanager.utils.widgets import ActionLink
 
 
-class DeviceForm(forms.ModelForm, FormActionItemsMixin):
+class DeviceForm(forms.ModelForm):
     class Meta:
         model = Device
         exclude = ("id",)
@@ -24,6 +23,23 @@ class DeviceForm(forms.ModelForm, FormActionItemsMixin):
                 "name": _("Generate QR code"),
             }
         ]
+
+
+class DeviceRentalForm(forms.ModelForm):
+    class Meta:
+        model = DeviceRental
+        exclude = ("id",)
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        return_date = self.cleaned_data.get("return_date")
+        device_pk = self.cleaned_data.get("device").pk
+        other_rentals = DeviceRental.objects.filter(device=device_pk).exclude(pk=self.instance.pk)
+        if return_date is None and other_rentals.exists():
+            raise forms.ValidationError(_("Device is already rented"))
+
+        return cleaned_data
 
 
 class QRCodeGenerationConfigForm(forms.ModelForm):
