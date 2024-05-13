@@ -8,6 +8,7 @@ from devicemanager.inventory.models import (
     Building,
     Device,
     DeviceModel,
+    DeviceRental,
     DeviceType,
     Manufacturer,
     QRCodeGenerationConfig,
@@ -119,7 +120,17 @@ class DeviceSerializer(serializers.ModelSerializer):
     model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects.all())
     room = serializers.PrimaryKeyRelatedField(many=False, queryset=Room.objects.all())
     guardian = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects.all())
+    device_rentals = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Device
-        fields = ["id", "model", "serial_number", "inventory_number", "room", "guardian"]
+        fields = ["id", "model", "serial_number", "inventory_number", "room", "guardian", "device_rentals"]
+
+
+class DeviceRentalSerializer(serializers.ModelSerializer):
+    device = serializers.PrimaryKeyRelatedField(many=False, queryset=Device.objects.all(), required=False)
+    borrower = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects.all(), required=False)
+
+    class Meta:
+        model = DeviceRental
+        fields = ["id", "device", "borrower", "rental_date", "return_date", "created_at", "updated_at"]
