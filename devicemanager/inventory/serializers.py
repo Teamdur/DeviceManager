@@ -117,12 +117,9 @@ class DeviceModelSerializer(serializers.ModelSerializer):
 
 class DeviceSerializer(serializers.ModelSerializer):
     model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects.all())
+    room = serializers.PrimaryKeyRelatedField(many=False, queryset=Room.objects.all())
+    guardian = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects.all())
 
     class Meta:
         model = Device
-        fields = [
-            "id",
-            "model",
-            "serial_number",
-            "inventory_number",
-        ]
+        fields = ["id", "model", "serial_number", "inventory_number", "room", "guardian"]
