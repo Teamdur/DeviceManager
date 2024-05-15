@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
+    "devicemanager.users.providers.authentik",
     "devicemanager.inventory",
     "devicemanager.utils",
     "colorfield",
@@ -95,6 +96,13 @@ SOCIALACCOUNT_PROVIDERS = {
     "github": {
         "APP": {"client_id": "cb3e145ad1d73bc4dfe2", "secret": "916cae2335f7a158afe4b93247b85201a444c3c2"},
         "SCOPE": ["user", "profile", "email", "oidc"],
+    },
+    "authentik": {
+        "APP": {
+            "client_id": "1XKXhk8IIi3RlLBkS9cCiIjzj0DDnh1NOcOM8epN",
+            "secret": "LPKVuxWeiAjPePmHkL3ylGjLNllXBTZBtMz5q9VHvzsEHf45RlEQxlZifWa4Q99rB7gx0OwpNzOh63mIwTRygPhZaPlvV57Ils2hpCIoaCd1JfrfPbJWoNQPOq4yrBxR",
+        },
+        "SCOPE": ["user", "profile", "email", "user:email"],
     },
 }
 
