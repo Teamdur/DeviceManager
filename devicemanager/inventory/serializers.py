@@ -3,12 +3,12 @@ from typing import NotRequired, TypedDict
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
 
-from devicemanager.inventory.api_views import Faculty
 from devicemanager.inventory.models import (
     Building,
     Device,
     DeviceModel,
     DeviceType,
+    Faculty,
     Manufacturer,
     QRCodeGenerationConfig,
     Room,
