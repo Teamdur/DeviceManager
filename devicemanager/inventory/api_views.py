@@ -8,6 +8,7 @@ from devicemanager.inventory.models import (
     Building,
     Device,
     DeviceModel,
+    DeviceRental,
     DeviceType,
     Faculty,
     Manufacturer,
@@ -18,6 +19,8 @@ from devicemanager.inventory.qr_code import QRCodePDFGenerator
 from devicemanager.inventory.serializers import (
     BuildingSerializer,
     DeviceModelSerializer,
+    DeviceRentalSerializer,
+    DeviceSerializer,
     DeviceTypeSerializer,
     FacultySerializer,
     ManufacturerSerializer,
@@ -93,4 +96,9 @@ class DeviceModelViewSet(ModelViewSet):
 
 class DeviceViewSet(ModelViewSet):
     queryset = Device.objects.all()
-    serializer_class = QRCodeDataSerializer
+    serializer_class = DeviceSerializer
+
+
+class DeviceRentalViewSet(ModelViewSet):
+    queryset = DeviceRental.objects.all()
+    serializer_class = DeviceRentalSerializer
