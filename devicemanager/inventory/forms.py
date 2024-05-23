@@ -3,10 +3,11 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from devicemanager.inventory.models import Device, DeviceRental
+from devicemanager.utils.forms import FormActionItemsMixin
 from devicemanager.utils.widgets import ActionLink
 
 
-class DeviceForm(forms.ModelForm):
+class DeviceForm(FormActionItemsMixin, forms.ModelForm):
     class Meta:
         model = Device
         exclude = ("id",)

@@ -1,6 +1,6 @@
 <div class="list-group">
   {% for action_item in widget.action_links %}
-    <a class="list-group-item list-group-item-action" target="{{ action_item.target|default:"_blank" }}"
+    <a class="list-group-item user-select-none link-no-decor" target="{{ action_item.target|default:"_blank" }}"
        href="{{ action_item.url }}">
       {{ action_item.name }}
     </a>

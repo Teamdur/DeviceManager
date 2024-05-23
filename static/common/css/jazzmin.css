@@ -25,3 +25,7 @@
     max-height: 300px;
     overflow-y: auto;
 }
+
+.link-no-decor:active, .link-no-decor:focus, .link-no-decor:hover {
+    text-decoration: none;
+}
