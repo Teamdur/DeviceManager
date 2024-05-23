@@ -78,3 +78,34 @@ $ mise run setup-dev
 ```bash
 $ mise run dev
 ```
+
+## Production setup
+
+### App environment variables
+
+The following environment variables are required to run the app in production:
+
+- `SECRET_KEY`: A secret key for the app
+- `MYSQL_USER`: The database user
+- `MYSQL_PASSWORD`: The database password
+- `MYSQL_DATABASE`: The database host
+- `MYSQL_HOST`: The database host address
+
+For email sending, the following environment variables are required:
+
+- `EMAIL_BACKEND` should be set to `django.core.mail.backends.smtp.EmailBackend`
+- `EMAIL_HOST`: The email host
+- `EMAIL_PORT`: The email port
+- `EMAIL_HOST_USER`: The email host user
+- `EMAIL_HOST_PASSWORD`: The email host password
+- `EMAIL_USE_SSL`: Should be set to `True` if the email host uses SSL
+- `EMAIL_USE_TLS`: Should be set to `True` if the email host uses TLS
+
+For OIDC Authentication, the following environment variables should be provided however default values are provided:
+
+- `GOOGLE_CLIENT_ID`: The Google client ID
+- `GOOGLE_CLIENT_SECRET`: The Google client secret
+- `GITHUB_CLIENT_ID`: The Github client ID
+- `GITHUB_CLIENT_SECRET`: The Github client secret
+- `AUTHENTIK_CLIENT_ID`: The Authentik client ID
+- `AUTHENTIK_CLIENT_SECRET`: The Authentik client secret

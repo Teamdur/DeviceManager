@@ -19,6 +19,15 @@ env = environ.Env(
     MYSQL_PASSWORD=(str, "maria_db"),
     MYSQL_DATABASE=(str, "device_manager"),
     MYSQL_HOST=(str, "127.0.0.1"),
+    GOOGLE_CLIENT_ID=(str, "534939113963-72f2ph3fve2e7q374phrq4cl66r6jetd.apps.googleusercontent.com"),
+    GOOGLE_CLIENT_SECRET=(str, "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"),
+    GITHUB_CLIENT_ID=(str, "cb3e145ad1d73bc4dfe2"),
+    GITHUB_CLIENT_SECRET=(str, "916cae2335f7a158afe4b93247b85201a444c3c2"),
+    AUTHENTIK_CLIENT_ID=(str, "1XKXhk8IIi3RlLBkS9cCiIjzj0DDnh1NOcOM8epN"),
+    AUTHENTIK_CLIENT_SECRET=(
+        str,
+        "LPKVuxWeiAjPePmHkL3ylGjLNllXBTZBtMz5q9VHvzsEHf45RlEQxlZifWa4Q99rB7gx0OwpNzOh63mIwTRygPhZaPlvV57Ils2hpCIoaCd1JfrfPbJWoNQPOq4yrBxR",
+    ),
 )
 environ.Env.read_env()
 
@@ -83,8 +92,8 @@ SPECTACULAR_SETTINGS = {
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
-            "client_id": "534939113963-72f2ph3fve2e7q374phrq4cl66r6jetd.apps.googleusercontent.com",
-            "secret": "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",
+            "client_id": env("GOOGLE_CLIENT_ID"),
+            "secret": env("GOOGLE_CLIENT_SECRET"),
             "key": "",
         },
         "SCOPE": [
@@ -93,13 +102,13 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
     },
     "github": {
-        "APP": {"client_id": "cb3e145ad1d73bc4dfe2", "secret": "916cae2335f7a158afe4b93247b85201a444c3c2"},
+        "APP": {"client_id": env("GITHUB_CLIENT_ID"), "secret": env("GITHUB_CLIENT_SECRET")},
         "SCOPE": ["user", "profile", "email", "oidc"],
     },
     "authentik": {
         "APP": {
-            "client_id": "1XKXhk8IIi3RlLBkS9cCiIjzj0DDnh1NOcOM8epN",
-            "secret": "LPKVuxWeiAjPePmHkL3ylGjLNllXBTZBtMz5q9VHvzsEHf45RlEQxlZifWa4Q99rB7gx0OwpNzOh63mIwTRygPhZaPlvV57Ils2hpCIoaCd1JfrfPbJWoNQPOq4yrBxR",
+            "client_id": env("AUTHENTIK_CLIENT_ID"),
+            "secret": env("AUTHENTIK_CLIENT_SECRET"),
         },
         "SCOPE": ["user", "profile", "email", "user:email"],
     },
