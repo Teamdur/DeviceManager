@@ -15,11 +15,10 @@ from pathlib import Path
 import environ
 
 env = environ.Env(
-    DB_USER=(str, "postgres"),
-    DB_PASSWORD=(str, "postgres"),
-    DB_NAME=(str, "device-manager"),
-    DB_HOST=(str, "127.0.0.1"),
-    DB_PORT=(int, 5432),
+    MYSQL_USER=(str, "maria_db"),
+    MYSQL_PASSWORD=(str, "maria_db"),
+    MYSQL_DATABASE=(str, "device_manager"),
+    MYSQL_HOST=(str, "127.0.0.1"),
 )
 environ.Env.read_env()
 
@@ -151,12 +150,12 @@ WSGI_APPLICATION = "devicemanager.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME"),
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST": env("DB_HOST"),
-        "PORT": env("DB_PORT"),
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": env("MYSQL_DATABASE"),
+        "USER": env("MYSQL_USER"),
+        "PASSWORD": env("MYSQL_PASSWORD"),
+        "HOST": env("MYSQL_HOST"),
+        "PORT": 3306,
     }
 }
 
