@@ -58,17 +58,17 @@ INSTALLED_APPS = [
     "django_extensions",
     "debug_toolbar",
     "rest_framework",
-    "devicemanager.users",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
+    "drf_spectacular",
+    "colorfield",
     "devicemanager.users.providers.authentik",
     "devicemanager.inventory",
     "devicemanager.utils",
-    "colorfield",
-    "drf_spectacular",
+    "devicemanager.users",
 ]
 
 REST_FRAMEWORK = {
