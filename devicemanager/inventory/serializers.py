@@ -79,7 +79,7 @@ class FacultySerializer(serializers.ModelSerializer):
 
 
 class BuildingSerializer(serializers.ModelSerializer):
-    faculty = serializers.PrimaryKeyRelatedField(many=True, queryset=Faculty.objects.all())
+    faculty = serializers.PrimaryKeyRelatedField(many=False, queryset=Faculty.objects.all())
 
     class Meta:
         model = Building

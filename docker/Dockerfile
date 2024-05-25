@@ -35,4 +35,4 @@ USER device-manager
 WORKDIR /home/device-manager/app
 VOLUME ./media
 COPY --from=builder --chown=device-manager:device-manager /app .
-CMD ["gunicorn", "--workers=4", "-b 0.0.0.0:8000", "devicemanager.wsgi"]
+CMD ["gunicorn", "--workers=4", "-b 0.0.0.0:8000", "--capture-output", "--log-level=info", "--access-logfile=-", "--error-logfile=-", "devicemanager.wsgi"]

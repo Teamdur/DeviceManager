@@ -13,6 +13,7 @@ x-django-environment: &django-environment
   SECRET_KEY: ${DJANGO_SECRET:-"django-insecure-&#w*b7*0v3z4z62l989)sjk6wqdj_%v-)ty(7iakr+nw9&4i(%"}
   EMAIL_BACKEND: ${EMAIL_BACKEND}
   DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-devicemanager.settings_prod}
+  HTTPS: on
 
 x-email-server-environment: &email-server-environment
   EMAIL_HOST: ${EMAIL_HOST}
