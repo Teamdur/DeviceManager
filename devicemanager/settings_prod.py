@@ -12,11 +12,14 @@ ALLOWED_HOSTS = ["*"]
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
+CSRF_TRUSTED_ORIGINS = ["https://devicemanager.homa-server.eu", "https://device-manager.critteros.dev"]
+DEFAULT_HTTP_PROTOCOL = "https"
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 SECRET_KEY = env("SECRET_KEY")
 
 EMAIL_BACKEND = env("EMAIL_BACKEND")  # noqa: F405
-EMAIL_HOST_USER = env("EMAIL_HOST_USER", None)  # noqa: F405
 
 if EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
     EMAIL_HOST = env("EMAIL_HOST")  # noqa: F405
@@ -32,4 +35,33 @@ if EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
 
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
-MEDIA_ROOT = "/data/"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

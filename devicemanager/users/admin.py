@@ -1,8 +1,12 @@
+from allauth.socialaccount.models import SocialApp, SocialToken
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from devicemanager.users.models import DisplayNameDecorator, User
+
+admin.site.unregister(SocialToken)
+admin.site.unregister(SocialApp)
 
 
 @admin.register(User)

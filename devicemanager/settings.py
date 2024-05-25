@@ -15,10 +15,10 @@ from pathlib import Path
 import environ
 
 env = environ.Env(
-    MYSQL_USER=(str, "maria_db"),
-    MYSQL_PASSWORD=(str, "maria_db"),
-    MYSQL_DATABASE=(str, "device_manager"),
-    MYSQL_HOST=(str, "127.0.0.1"),
+    MARIADB_USER=(str, "maria_db"),
+    MARIADB_PASSWORD=(str, "maria_db"),
+    MARIADB_DATABASE=(str, "device_manager"),
+    MARIADB_HOST=(str, "127.0.0.1"),
     GOOGLE_CLIENT_ID=(str, "534939113963-72f2ph3fve2e7q374phrq4cl66r6jetd.apps.googleusercontent.com"),
     GOOGLE_CLIENT_SECRET=(str, "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"),
     GITHUB_CLIENT_ID=(str, "cb3e145ad1d73bc4dfe2"),
@@ -58,17 +58,17 @@ INSTALLED_APPS = [
     "django_extensions",
     "debug_toolbar",
     "rest_framework",
-    "devicemanager.users",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
+    "drf_spectacular",
+    "colorfield",
     "devicemanager.users.providers.authentik",
     "devicemanager.inventory",
     "devicemanager.utils",
-    "colorfield",
-    "drf_spectacular",
+    "devicemanager.users",
 ]
 
 REST_FRAMEWORK = {
@@ -160,10 +160,10 @@ WSGI_APPLICATION = "devicemanager.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": env("MYSQL_DATABASE"),
-        "USER": env("MYSQL_USER"),
-        "PASSWORD": env("MYSQL_PASSWORD"),
-        "HOST": env("MYSQL_HOST"),
+        "NAME": env("MARIADB_DATABASE"),
+        "USER": env("MARIADB_USER"),
+        "PASSWORD": env("MARIADB_PASSWORD"),
+        "HOST": env("MARIADB_HOST"),
         "PORT": 3306,
     }
 }
@@ -297,3 +297,5 @@ LOGIN_REDIRECT_URL = "/"
 
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = BASE_DIR / "emails"
+MEDIA_ROOT = BASE_DIR / "build/media"
+STATIC_ROOT = BASE_DIR / "build/static"
