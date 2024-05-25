@@ -43,6 +43,10 @@ dev = [
     "factory-boy~=3.3.0",
     "pytest-django~=4.8.0",
 ]
+prod = [
+    "gunicorn==22.0.0",
+    "distlib"
+]
 
 [tool.isort]
 profile = "black"

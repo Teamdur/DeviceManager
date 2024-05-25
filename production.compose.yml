@@ -1,0 +1,78 @@
+name: device-manager
+
+x-mariadb-environment: &mariadb-environment
+  MARIADB_USER: ${MARIADB_USER:-maria_db}
+  MARIADB_PASSWORD: ${MARIADB_PASSWORD:-maria_db}
+  MARIADB_DATABASE: ${MARIADB_DATABASE:-device_manager}
+
+x-mariadb-host-config: &mariadb-host-config
+  MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-root}
+  LANG: C.UTF-8
+
+x-django-environment: &django-environment
+  SECRET_KEY: ${DJANGO_SECRET:-"django-insecure-&#w*b7*0v3z4z62l989)sjk6wqdj_%v-)ty(7iakr+nw9&4i(%"}
+  EMAIL_BACKEND: ${EMAIL_BACKEND}
+  DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-devicemanager.settings_prod}
+
+x-email-server-environment: &email-server-environment
+  EMAIL_HOST: ${EMAIL_HOST}
+  EMAIL_PORT: ${EMAIL_PORT}
+  EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+  EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+  EMAIL_USE_TLS: ${EMAIL_USE_TLS}
+  EMAIL_USE_SSL: ${EMAIL_USE_SSL}
+
+x-oidc-configuration: &oidc-conifguration
+  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+  GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+  GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+  AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID}
+  AUTHENTIK_CLIENT_SECRET: ${AUTHENTIK_CLIENT_SECRET}
+
+x-application-port-mapping: &application-port-mapping
+  - ${API_PORT:-8000}:8000
+
+x-static-server-port-mapping: &static-server-port-mapping
+  - ${STATIC_PORT:-8080}:80
+
+services:
+  mariadb:
+    image: mariadb:11.3.2
+    container_name: mariadb
+    environment:
+      <<: [ *mariadb-environment, *mariadb-host-config ]
+    command: --bind-address=0.0.0.0
+    expose:
+      - 3306
+    volumes:
+      - mariadb-data:/var/lib/mysql
+  application-server:
+    image: device-manager-application:0.0.1
+    container_name: application-server
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: application-server
+    ports: *application-port-mapping
+    environment:
+      <<: [ *mariadb-environment, *django-environment, *email-server-environment, *oidc-conifguration ]
+      MARIADB_HOST: mariadb
+    volumes:
+      - media-files:/home/device-manager/app/media
+    depends_on:
+      - mariadb
+  static-server:
+    image: device-manager-staticserver:0.0.1
+    container_name: staticfiles-server
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: static-server
+    ports: *static-server-port-mapping
+
+volumes:
+  mariadb-data:
+  media-files:

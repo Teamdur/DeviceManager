@@ -12,11 +12,11 @@ ALLOWED_HOSTS = ["*"]
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
+CSRF_TRUSTED_ORIGINS = ["https://devicemanager.homa-server.eu", "https://device-manager.critteros.dev"]
 
 SECRET_KEY = env("SECRET_KEY")
 
 EMAIL_BACKEND = env("EMAIL_BACKEND")  # noqa: F405
-EMAIL_HOST_USER = env("EMAIL_HOST_USER", None)  # noqa: F405
 
 if EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
     EMAIL_HOST = env("EMAIL_HOST")  # noqa: F405
@@ -32,4 +32,6 @@ if EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
 
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
-MEDIA_ROOT = "/data/"
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

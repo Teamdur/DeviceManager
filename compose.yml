@@ -14,7 +14,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - device-manager-dev-db:/var/lib/postgresql/data
+      - device-manager-dev-db:/var/lib/mysql
     environment:
       <<: *pg-mdb-credentials
 
