@@ -78,7 +78,7 @@ class FacultySerializer(serializers.ModelSerializer):
 
 
 class BuildingSerializer(serializers.ModelSerializer):
-    faculty = serializers.PrimaryKeyRelatedField(many=True, queryset=Faculty.objects.all())
+    faculty = serializers.PrimaryKeyRelatedField(many=False, queryset=Faculty.objects)
 
     class Meta:
         model = Building
@@ -86,8 +86,8 @@ class BuildingSerializer(serializers.ModelSerializer):
 
 
 class RoomSerializer(serializers.ModelSerializer):
-    building = serializers.PrimaryKeyRelatedField(many=False, queryset=Building.objects.all())
-    occupants = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
+    building = serializers.PrimaryKeyRelatedField(many=False, queryset=Building.objects)
+    occupants = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects)
 
     class Meta:
         model = Room
@@ -107,8 +107,8 @@ class DeviceTypeSerializer(serializers.ModelSerializer):
 
 
 class DeviceModelSerializer(serializers.ModelSerializer):
-    device_type = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceType.objects.all())
-    manufacturer = serializers.PrimaryKeyRelatedField(many=False, queryset=Manufacturer.objects.all())
+    device_type = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceType.objects)
+    manufacturer = serializers.PrimaryKeyRelatedField(many=False, queryset=Manufacturer.objects)
 
     class Meta:
         model = DeviceModel
@@ -116,7 +116,7 @@ class DeviceModelSerializer(serializers.ModelSerializer):
 
 
 class DeviceSerializer(serializers.ModelSerializer):
-    model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects.all())
+    model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects)
 
     class Meta:
         model = Device
