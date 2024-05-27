@@ -3,12 +3,13 @@ from typing import NotRequired, TypedDict
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
 
-from devicemanager.inventory.api_views import Faculty
 from devicemanager.inventory.models import (
     Building,
     Device,
     DeviceModel,
+    DeviceRental,
     DeviceType,
+    Faculty,
     Manufacturer,
     QRCodeGenerationConfig,
     Room,
@@ -116,13 +117,20 @@ class DeviceModelSerializer(serializers.ModelSerializer):
 
 
 class DeviceSerializer(serializers.ModelSerializer):
-    device_model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects)
+    model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects)
+    room = serializers.PrimaryKeyRelatedField(many=False, queryset=Room.objects)
+    guardian = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects)
+    device_rentals = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Device
-        fields = [
-            "id",
-            "device_model",
-            "serial_number",
-            "inventory_number",
-        ]
+        fields = ["id", "model", "serial_number", "inventory_number", "room", "guardian", "device_rentals"]
+
+
+class DeviceRentalSerializer(serializers.ModelSerializer):
+    device = serializers.PrimaryKeyRelatedField(many=False, queryset=Device.objects, required=False)
+    borrower = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects, required=False)
+
+    class Meta:
+        model = DeviceRental
+        fields = ["id", "device", "borrower", "rental_date", "return_date", "created_at", "updated_at"]

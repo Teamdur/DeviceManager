@@ -1,0 +1,8 @@
+.gitignore
+.git
+.venv
+media
+.pre-commit-config.yaml
+.mise.toml
+data
+build

@@ -125,6 +125,12 @@ class Device(models.Model):
     inventory_number = models.CharField(
         max_length=512, null=True, blank=True, unique=True, db_index=True, verbose_name=_("Inventory Number")
     )
+    room = models.ForeignKey(
+        Room, on_delete=models.SET_NULL, related_name="devices", verbose_name=_("Room"), null=True, blank=True
+    )
+    guardian = models.ForeignKey(
+        User, on_delete=models.SET_NULL, related_name="devices", verbose_name=_("Guardian"), null=True, blank=True
+    )
 
     class Meta:
         verbose_name = _("Device")

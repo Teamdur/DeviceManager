@@ -15,11 +15,19 @@ from pathlib import Path
 import environ
 
 env = environ.Env(
-    DB_USER=(str, "postgres"),
-    DB_PASSWORD=(str, "postgres"),
-    DB_NAME=(str, "device-manager"),
-    DB_HOST=(str, "127.0.0.1"),
-    DB_PORT=(int, 5432),
+    MARIADB_USER=(str, "maria_db"),
+    MARIADB_PASSWORD=(str, "maria_db"),
+    MARIADB_DATABASE=(str, "device_manager"),
+    MARIADB_HOST=(str, "127.0.0.1"),
+    GOOGLE_CLIENT_ID=(str, "534939113963-72f2ph3fve2e7q374phrq4cl66r6jetd.apps.googleusercontent.com"),
+    GOOGLE_CLIENT_SECRET=(str, "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"),
+    GITHUB_CLIENT_ID=(str, "cb3e145ad1d73bc4dfe2"),
+    GITHUB_CLIENT_SECRET=(str, "916cae2335f7a158afe4b93247b85201a444c3c2"),
+    AUTHENTIK_CLIENT_ID=(str, "1XKXhk8IIi3RlLBkS9cCiIjzj0DDnh1NOcOM8epN"),
+    AUTHENTIK_CLIENT_SECRET=(
+        str,
+        "LPKVuxWeiAjPePmHkL3ylGjLNllXBTZBtMz5q9VHvzsEHf45RlEQxlZifWa4Q99rB7gx0OwpNzOh63mIwTRygPhZaPlvV57Ils2hpCIoaCd1JfrfPbJWoNQPOq4yrBxR",
+    ),
 )
 environ.Env.read_env()
 
@@ -50,16 +58,17 @@ INSTALLED_APPS = [
     "django_extensions",
     "debug_toolbar",
     "rest_framework",
-    "devicemanager.users",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
+    "drf_spectacular",
+    "colorfield",
+    "devicemanager.users.providers.authentik",
     "devicemanager.inventory",
     "devicemanager.utils",
-    "colorfield",
-    "drf_spectacular",
+    "devicemanager.users",
 ]
 
 REST_FRAMEWORK = {
@@ -80,8 +89,8 @@ SPECTACULAR_SETTINGS = {
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
-            "client_id": "534939113963-72f2ph3fve2e7q374phrq4cl66r6jetd.apps.googleusercontent.com",
-            "secret": "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",
+            "client_id": env("GOOGLE_CLIENT_ID"),
+            "secret": env("GOOGLE_CLIENT_SECRET"),
             "key": "",
         },
         "SCOPE": [
@@ -90,8 +99,15 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
     },
     "github": {
-        "APP": {"client_id": "cb3e145ad1d73bc4dfe2", "secret": "916cae2335f7a158afe4b93247b85201a444c3c2"},
+        "APP": {"client_id": env("GITHUB_CLIENT_ID"), "secret": env("GITHUB_CLIENT_SECRET")},
         "SCOPE": ["user", "profile", "email", "oidc"],
+    },
+    "authentik": {
+        "APP": {
+            "client_id": env("AUTHENTIK_CLIENT_ID"),
+            "secret": env("AUTHENTIK_CLIENT_SECRET"),
+        },
+        "SCOPE": ["user", "profile", "email", "user:email"],
     },
 }
 
@@ -140,12 +156,12 @@ WSGI_APPLICATION = "devicemanager.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME"),
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST": env("DB_HOST"),
-        "PORT": env("DB_PORT"),
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": env("MARIADB_DATABASE"),
+        "USER": env("MARIADB_USER"),
+        "PASSWORD": env("MARIADB_PASSWORD"),
+        "HOST": env("MARIADB_HOST"),
+        "PORT": 3306,
     }
 }
 
@@ -278,3 +294,5 @@ LOGIN_REDIRECT_URL = "/"
 
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = BASE_DIR / "emails"
+MEDIA_ROOT = BASE_DIR / "build/media"
+STATIC_ROOT = BASE_DIR / "build/static"

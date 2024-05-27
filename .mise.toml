@@ -31,6 +31,13 @@ depends = ["make-deps", "install-pip-tools"]
 sources = ["pyproject.toml"]
 outputs = ["requirements-dev.txt"]
 
+[tasks.make-deps-prod]
+run = "pip-compile --extra prod -o requirements-prod.txt -c requirements.txt"
+description = "Update prod dependencies"
+depends = ["make-deps", "install-pip-tools"]
+sources = ["pyproject.toml"]
+outputs = ["requirements-prod.txt"]
+
 [tasks.install-deps]
 run = "pip-sync requirements.txt"
 description = "Install dependencies"
