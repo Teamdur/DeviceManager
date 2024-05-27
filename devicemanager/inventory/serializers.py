@@ -116,13 +116,13 @@ class DeviceModelSerializer(serializers.ModelSerializer):
 
 
 class DeviceSerializer(serializers.ModelSerializer):
-    model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects)
+    device_model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects)
 
     class Meta:
         model = Device
         fields = [
             "id",
-            "model",
+            "device_model",
             "serial_number",
             "inventory_number",
         ]
