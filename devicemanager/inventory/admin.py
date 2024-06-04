@@ -71,8 +71,14 @@ class DeviceRentalInline(admin.StackedInline):
 
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
-    list_display = ("id", "device_model", "serial_number", "inventory_number")
-    ordering = ("model__name",)
+    list_display = (
+        "id",
+        "device_model",
+        "serial_number",
+        "inventory_number",
+        "current_rental",
+    )
+    ordering = ("device_model__name",)
     search_fields = ("uuid", "serial_number", "inventory_number")
     list_filter = ("device_model__device_type", "device_model__manufacturer")
     actions = ["generate_qr_codes"]
@@ -84,8 +90,14 @@ class DeviceAdmin(admin.ModelAdmin):
     def generate_qr_codes(self, request: HttpRequest, queryset: QuerySet):
         selected_ids = queryset.values_list("pk", flat=True)
         return HttpResponseRedirect(
-            reverse("inventory:qr-generate") + f"?ids={','.join(str(id) for id in selected_ids)}"
+            reverse("inventory:qr-generate")
+            + f"?ids={','.join(str(id) for id in selected_ids)}"
         )
+
+    @admin.display(description=_("Current Rental"))
+    def current_rental(self, obj: Device) -> str:
+        rental = obj.rentals.filter(return_date=None).first()
+        return rental.borrower if rental else "-"
 
 
 @admin.register(QRCodeGenerationConfig)
@@ -94,12 +106,25 @@ class QRCodeGenerationConfigAdmin(admin.ModelAdmin):
     list_filter = ("active",)
 
     fieldsets = (
-        (_("QR Code Params"), {"fields": ("active", "qr_code_size_cm", "qr_code_margin_mm")}),
-        (_("PDF Settings"), {"fields": ("pdf_page_width_mm", "pdf_page_height_mm", "print_dpi")}),
+        (
+            _("QR Code Params"),
+            {"fields": ("active", "qr_code_size_cm", "qr_code_margin_mm")},
+        ),
+        (
+            _("PDF Settings"),
+            {"fields": ("pdf_page_width_mm", "pdf_page_height_mm", "print_dpi")},
+        ),
         (_("Colors"), {"fields": ("fill_color", "back_color")}),
         (
             _("QR Code Labels"),
-            {"fields": ("serial_number_label", "inventory_number_label", "id_label", "included_labels")},
+            {
+                "fields": (
+                    "serial_number_label",
+                    "inventory_number_label",
+                    "id_label",
+                    "included_labels",
+                )
+            },
         ),
     )
 
@@ -108,7 +133,14 @@ class QRCodeGenerationConfigAdmin(admin.ModelAdmin):
 
 @admin.register(DeviceRental)
 class DeviceRentalAdmin(admin.ModelAdmin):
-    list_display = ("id", "device", "is_rented", "borrower", "rental_date", "return_date")
+    list_display = (
+        "id",
+        "device",
+        "is_rented",
+        "borrower",
+        "rental_date",
+        "return_date",
+    )
     ordering = ("rental_date",)
 
     form = DeviceRentalForm

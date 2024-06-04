@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name="devices",
                 to=settings.AUTH_USER_MODEL,
-                verbose_name="Guardian",
+                verbose_name="Owner",
             ),
         ),
         migrations.AddField(
