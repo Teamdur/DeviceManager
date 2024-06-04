@@ -79,7 +79,7 @@ class FacultySerializer(serializers.ModelSerializer):
 
 
 class BuildingSerializer(serializers.ModelSerializer):
-    faculty = serializers.PrimaryKeyRelatedField(many=False, queryset=Faculty.objects.all())
+    faculty = serializers.PrimaryKeyRelatedField(many=False, queryset=Faculty.objects)
 
     class Meta:
         model = Building
@@ -87,8 +87,8 @@ class BuildingSerializer(serializers.ModelSerializer):
 
 
 class RoomSerializer(serializers.ModelSerializer):
-    building = serializers.PrimaryKeyRelatedField(many=False, queryset=Building.objects.all())
-    occupants = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
+    building = serializers.PrimaryKeyRelatedField(many=False, queryset=Building.objects)
+    occupants = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects)
 
     class Meta:
         model = Room
@@ -108,8 +108,8 @@ class DeviceTypeSerializer(serializers.ModelSerializer):
 
 
 class DeviceModelSerializer(serializers.ModelSerializer):
-    device_type = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceType.objects.all())
-    manufacturer = serializers.PrimaryKeyRelatedField(many=False, queryset=Manufacturer.objects.all())
+    device_type = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceType.objects)
+    manufacturer = serializers.PrimaryKeyRelatedField(many=False, queryset=Manufacturer.objects)
 
     class Meta:
         model = DeviceModel
@@ -117,9 +117,9 @@ class DeviceModelSerializer(serializers.ModelSerializer):
 
 
 class DeviceSerializer(serializers.ModelSerializer):
-    model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects.all())
-    room = serializers.PrimaryKeyRelatedField(many=False, queryset=Room.objects.all())
-    guardian = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects.all())
+    model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects)
+    room = serializers.PrimaryKeyRelatedField(many=False, queryset=Room.objects)
+    guardian = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects)
     device_rentals = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
@@ -128,8 +128,8 @@ class DeviceSerializer(serializers.ModelSerializer):
 
 
 class DeviceRentalSerializer(serializers.ModelSerializer):
-    device = serializers.PrimaryKeyRelatedField(many=False, queryset=Device.objects.all(), required=False)
-    borrower = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects.all(), required=False)
+    device = serializers.PrimaryKeyRelatedField(many=False, queryset=Device.objects, required=False)
+    borrower = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects, required=False)
 
     class Meta:
         model = DeviceRental

@@ -71,10 +71,10 @@ class DeviceRentalInline(admin.StackedInline):
 
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
-    list_display = ("id", "model", "serial_number", "inventory_number")
+    list_display = ("id", "device_model", "serial_number", "inventory_number")
     ordering = ("model__name",)
     search_fields = ("uuid", "serial_number", "inventory_number")
-    list_filter = ("model__device_type", "model__manufacturer")
+    list_filter = ("device_model__device_type", "device_model__manufacturer")
     actions = ["generate_qr_codes"]
     inlines = [DeviceRentalInline]
 
