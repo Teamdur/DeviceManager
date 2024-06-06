@@ -76,6 +76,8 @@ class DeviceAdmin(admin.ModelAdmin):
         "device_model",
         "serial_number",
         "inventory_number",
+        "room",
+        "guardian",
         "current_rental",
     )
     ordering = ("device_model__name",)
@@ -90,8 +92,7 @@ class DeviceAdmin(admin.ModelAdmin):
     def generate_qr_codes(self, request: HttpRequest, queryset: QuerySet):
         selected_ids = queryset.values_list("pk", flat=True)
         return HttpResponseRedirect(
-            reverse("inventory:qr-generate")
-            + f"?ids={','.join(str(id) for id in selected_ids)}"
+            reverse("inventory:qr-generate") + f"?ids={','.join(str(id) for id in selected_ids)}"
         )
 
     @admin.display(description=_("Current Rental"))

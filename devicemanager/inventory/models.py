@@ -24,12 +24,8 @@ from devicemanager.utils.units import UnitConverter
 
 class Faculty(models.Model):
     id = models.AutoField(primary_key=True)
-    full_name = models.CharField(
-        max_length=512, unique=True, verbose_name=_("Faculty Full Name")
-    )
-    short_name = models.CharField(
-        max_length=60, unique=True, verbose_name=_("Faculty  Name")
-    )
+    full_name = models.CharField(max_length=512, unique=True, verbose_name=_("Faculty Full Name"))
+    short_name = models.CharField(max_length=60, unique=True, verbose_name=_("Faculty  Name"))
 
     class Meta:
         verbose_name = _("Faculty")
@@ -43,9 +39,7 @@ class Faculty(models.Model):
 class Building(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=60, verbose_name=_("Building Name"))
-    faculty = models.ForeignKey(
-        Faculty, on_delete=models.CASCADE, related_name="buildings"
-    )
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name="buildings")
 
     class Meta:
         verbose_name = _("Building")
@@ -66,9 +60,7 @@ class Room(models.Model):
         verbose_name=_("Building"),
     )
     description = models.TextField(blank=True)
-    occupants = models.ManyToManyField(
-        User, related_name="rooms", blank=True, verbose_name=_("Occupants")
-    )
+    occupants = models.ManyToManyField(User, related_name="rooms", blank=True, verbose_name=_("Occupants"))
 
     class Meta:
         verbose_name = _("Room")
@@ -81,9 +73,7 @@ class Room(models.Model):
 
 class Manufacturer(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(
-        max_length=256, unique=True, verbose_name=_("Manufacturer Name")
-    )
+    name = models.CharField(max_length=256, unique=True, verbose_name=_("Manufacturer Name"))
     description = models.TextField(blank=True)
 
     class Meta:
@@ -147,7 +137,6 @@ class Device(models.Model):
         max_length=512,
         null=True,
         blank=True,
-        unique=True,
         db_index=True,
         verbose_name=_("Serial Number"),
     )
@@ -155,7 +144,6 @@ class Device(models.Model):
         max_length=512,
         null=True,
         blank=True,
-        unique=True,
         db_index=True,
         verbose_name=_("Inventory Number"),
     )
@@ -212,16 +200,12 @@ class Device(models.Model):
         }
 
         return "\n".join(
-            f"{labels[label][0]}: {str(labels[label][1] or '')}"
-            for label in include_labels
-            if label in labels
+            f"{labels[label][0]}: {str(labels[label][1] or '')}" for label in include_labels if label in labels
         )
 
 
 class QRCodeGenerationConfig(LifecycleModel):
-    id = models.AutoField(
-        primary_key=True, verbose_name=_("QR Code Generation Config ID")
-    )
+    id = models.AutoField(primary_key=True, verbose_name=_("QR Code Generation Config ID"))
     qr_code_size_cm = models.PositiveIntegerField(
         verbose_name=_("QR Code Size in cm"),
         default=5,
@@ -233,19 +217,11 @@ class QRCodeGenerationConfig(LifecycleModel):
     active = models.BooleanField(verbose_name=_("Configuration in use"), default=False)
     fill_color = ColorField(default="#000000", verbose_name=_("Fill Color"))
     back_color = ColorField(default="#FFFFFF", verbose_name=_("Background Color"))
-    serial_number_label = models.CharField(
-        max_length=15, default="SN", verbose_name=_("Serial Number Label")
-    )
-    inventory_number_label = models.CharField(
-        max_length=15, default="IN", verbose_name=_("Inventory Number Label")
-    )
+    serial_number_label = models.CharField(max_length=15, default="SN", verbose_name=_("Serial Number Label"))
+    inventory_number_label = models.CharField(max_length=15, default="IN", verbose_name=_("Inventory Number Label"))
     id_label = models.CharField(max_length=15, default="ID", verbose_name=_("ID Label"))
-    included_labels = ListJSONField(
-        verbose_name=_("Included Labels"), default=Device.default_labels_include
-    )
-    print_dpi = models.PositiveIntegerField(
-        default=72, verbose_name=_("Print DPI"), validators=[MinValueValidator(1)]
-    )
+    included_labels = ListJSONField(verbose_name=_("Included Labels"), default=Device.default_labels_include)
+    print_dpi = models.PositiveIntegerField(default=72, verbose_name=_("Print DPI"), validators=[MinValueValidator(1)])
     pdf_page_width_mm = models.PositiveIntegerField(
         default=210,
         verbose_name=_("PDF Page Width in mm"),
@@ -321,9 +297,7 @@ class DeviceRental(TimeTrackable, LifecycleModel):
 
     @hook(BEFORE_SAVE, condition=WhenFieldValueIs("return_date", None))
     def ensure_device_is_rented_once(self):
-        other_device_rentals = DeviceRental.objects.filter(
-            device=self.device, return_date=None
-        ).exclude(pk=self.pk)
+        other_device_rentals = DeviceRental.objects.filter(device=self.device, return_date=None).exclude(pk=self.pk)
         if other_device_rentals.exists():
             raise ValueError("Device is already rented")
 
