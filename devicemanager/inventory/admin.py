@@ -72,13 +72,16 @@ class DeviceRentalInline(admin.StackedInline):
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
+        "device_type",
+        "manufacturer",
         "device_model",
+        "get_room",
+        "building",
+        "guardian",
         "serial_number",
         "inventory_number",
-        "room",
-        "guardian",
         "current_rental",
+        "date_rented",
     )
     ordering = ("device_model__name",)
     search_fields = ("uuid", "serial_number", "inventory_number")
@@ -99,6 +102,33 @@ class DeviceAdmin(admin.ModelAdmin):
     def current_rental(self, obj: Device) -> str:
         rental = obj.rentals.filter(return_date=None).first()
         return rental.borrower if rental else "-"
+
+    @admin.display(ordering="device_model__device_type__short_name", description=_("Device Type"))
+    def device_type(self, obj: Device) -> str:
+        return obj.device_model.device_type.name
+
+    @admin.display(ordering="device_model__manufacturer__name", description=_("Manufacturer"))
+    def manufacturer(self, obj: Device) -> str:
+        return obj.device_model.manufacturer.name
+
+    @admin.display(ordering="room__room_number", description=_("Room"))
+    def get_room(self, obj: Device) -> str:
+        try:
+            return obj.room.room_number
+        except AttributeError:
+            return "-"
+
+    @admin.display(ordering="room__building__name", description=_("Building"))
+    def building(self, obj: Device) -> str:
+        try:
+            return obj.room.building.name
+        except AttributeError:
+            return "-"
+
+    @admin.display(description=_("Date rented"))
+    def date_rented(self, obj: Device) -> str:
+        rental = obj.rentals.filter(return_date=None).first()
+        return rental.rental_date if rental else "-"
 
 
 @admin.register(QRCodeGenerationConfig)
