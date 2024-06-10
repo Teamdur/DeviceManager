@@ -172,11 +172,11 @@ class Device(models.Model):
         return f"{self.device_model} {self.inventory_number}"
 
     LABELS_CHOICES = (
-        ("serial_number", _("Serial Number")),
-        ("inventory_number", _("Inventory Number")),
         ("building", _("Building")),
         ("room", _("Room")),
         ("owner", _("Owner")),
+        ("serial_number", _("Serial Number")),
+        ("inventory_number", _("Inventory Number")),
     )
 
     @staticmethod
@@ -193,14 +193,14 @@ class Device(models.Model):
             include_labels = qrcode_config.included_labels
 
         labels = {
+            "building": (qrcode_config.building_label, self.room.building.name if self.room else ""),
+            "room": (qrcode_config.room_label, self.room.room_number if self.room else ""),
+            "owner": (qrcode_config.owner_label, self.guardian.get_full_name() if self.guardian else ""),
             "serial_number": (qrcode_config.serial_number_label, self.serial_number),
             "inventory_number": (
                 qrcode_config.inventory_number_label,
                 self.inventory_number,
             ),
-            "building": (qrcode_config.building_label, self.room.building.name if self.room else ""),
-            "room": (qrcode_config.room_label, self.room.room_number if self.room else ""),
-            "owner": (qrcode_config.owner_label, self.guardian.get_full_name() if self.guardian else ""),
         }
 
         return "\n".join(
@@ -221,15 +221,11 @@ class QRCodeGenerationConfig(LifecycleModel):
     active = models.BooleanField(verbose_name=_("Configuration in use"), default=False)
     fill_color = ColorField(default="#000000", verbose_name=_("Fill Color"))
     back_color = ColorField(default="#FFFFFF", verbose_name=_("Background Color"))
-    building_label = models.CharField(max_length=15, default="", verbose_name=_("Building Label"), blank=True)
-    room_label = models.CharField(max_length=15, default="", verbose_name=_("Room Label"), blank=True)
-    owner_label = models.CharField(max_length=15, default="", verbose_name=_("Owner Label"), blank=True)
-    serial_number_label = models.CharField(
-        max_length=15, default="SN", verbose_name=_("Serial Number Label"), blank=True
-    )
-    inventory_number_label = models.CharField(
-        max_length=15, default="IN", verbose_name=_("Inventory Number Label"), blank=True
-    )
+    building_label = models.CharField(max_length=15, default="", verbose_name=_("Building Label"))
+    room_label = models.CharField(max_length=15, default="", verbose_name=_("Room Label"))
+    owner_label = models.CharField(max_length=15, default="", verbose_name=_("Owner Label"))
+    serial_number_label = models.CharField(max_length=15, default="SN", verbose_name=_("Serial Number Label"))
+    inventory_number_label = models.CharField(max_length=15, default="IN", verbose_name=_("Inventory Number Label"))
     included_labels = ListJSONField(verbose_name=_("Included Labels"), default=Device.default_labels_include)
     print_dpi = models.PositiveIntegerField(default=72, verbose_name=_("Print DPI"), validators=[MinValueValidator(1)])
     pdf_page_width_mm = models.PositiveIntegerField(
