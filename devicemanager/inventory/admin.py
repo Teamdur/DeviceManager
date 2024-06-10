@@ -152,7 +152,9 @@ class QRCodeGenerationConfigAdmin(admin.ModelAdmin):
                 "fields": (
                     "serial_number_label",
                     "inventory_number_label",
-                    "id_label",
+                    "building_label",
+                    "room_label",
+                    "owner_label",
                     "included_labels",
                 )
             },
