@@ -51,22 +51,26 @@ class QRCodeGenerator:
         text_width = max(font.getbbox(line)[2] for line in text_lines)
         text_height = sum(font.getbbox(line)[3] for line in text_lines)
 
-        expanded_width = max(im_width, text_width)
-        padding_bottom = self.config.unit_converter.cm_to_px(
-            self.border * 0.3
-        )  # Around 3 times the unit gives similar padding
-        expanded_height = im_height + text_height
-        expanded_img = Image.new("RGB", (expanded_width, expanded_height + padding_bottom), self.back_color)
+        # The width of expanded image needs to accommodate both the image and the text.
+        # The height of expanded image should be as high as the taller one between the image and the text.
+        expanded_width = im_width + text_width
+        expanded_height = max(im_height, text_height)
 
-        qr_position = ((expanded_width - im_width) // 2, 0)
+        # The text will be located beside the QR code, so we do not need the bottom padding.
+        expanded_img = Image.new("RGB", (expanded_width, expanded_height), self.back_color)
+
+        qr_position = (0, (expanded_height - im_height) // 2)  # Center the QR code vertically
         expanded_img.paste(img, qr_position)
 
         draw = ImageDraw.Draw(expanded_img)
-        y_offset = im_height
 
-        line_offsets = [(expanded_width - font.getbbox(line)[2]) // 2 for line in text_lines]
-        x_offset = min(line_offsets)
+        # The offset for text should be beside the image, so the y_offset keeps the same.
+        x_offset = im_width
 
+        # Initialize y_offset considering vertical centering of text
+        y_offset = (im_height - text_height) // 2
+
+        # Print the text
         for line in text_lines:
             _, _, line_width, line_height = font.getbbox(line)
             draw.text((x_offset, y_offset), line, fill=self.fill_color, font=font)
@@ -126,7 +130,7 @@ class QRCodePDFGenerator:
             stream.seek(0)
 
             self.pdf[page_index].insert_image(
-                (x_offset, y_offset, tile_width + x_offset, tile_height + y_offset), stream=stream, keep_proportion=True
+                (x_offset, y_offset, x_offset + qr.size[0], y_offset + qr.size[1]), stream=stream, keep_proportion=True
             )
 
         output = io.BytesIO()
