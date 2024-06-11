@@ -19,7 +19,10 @@ env = environ.Env(
     MARIADB_PASSWORD=(str, "maria_db"),
     MARIADB_DATABASE=(str, "device_manager"),
     MARIADB_HOST=(str, "127.0.0.1"),
-    GOOGLE_CLIENT_ID=(str, "534939113963-72f2ph3fve2e7q374phrq4cl66r6jetd.apps.googleusercontent.com"),
+    GOOGLE_CLIENT_ID=(
+        str,
+        "534939113963-72f2ph3fve2e7q374phrq4cl66r6jetd.apps.googleusercontent.com",
+    ),
     GOOGLE_CLIENT_SECRET=(str, "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"),
     GITHUB_CLIENT_ID=(str, "cb3e145ad1d73bc4dfe2"),
     GITHUB_CLIENT_SECRET=(str, "916cae2335f7a158afe4b93247b85201a444c3c2"),
@@ -69,6 +72,7 @@ INSTALLED_APPS = [
     "devicemanager.inventory",
     "devicemanager.utils",
     "devicemanager.users",
+    "rest_framework.authtoken",
 ]
 
 REST_FRAMEWORK = {
@@ -76,6 +80,14 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     "DEFAULT_PERMISSION_CLASSES": ["devicemanager.drf_permissions.DRFPermissions"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ],
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
@@ -86,6 +98,7 @@ SPECTACULAR_SETTINGS = {
     # OTHER SETTINGS
     "AUTHENTICATION_WHITELIST": [
         "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
     ],
 }
 
@@ -102,7 +115,10 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
     },
     "github": {
-        "APP": {"client_id": env("GITHUB_CLIENT_ID"), "secret": env("GITHUB_CLIENT_SECRET")},
+        "APP": {
+            "client_id": env("GITHUB_CLIENT_ID"),
+            "secret": env("GITHUB_CLIENT_SECRET"),
+        },
         "SCOPE": ["user", "profile", "email", "oidc"],
     },
     "authentik": {
@@ -235,6 +251,7 @@ JAZZMIN_SETTINGS = {
         "socialaccount.socialtoken": "fas fa-key",
         "socialaccount.socialapp": "fas fa-share-alt",
         "account.emailaddress": "fas fa-at",
+        "authtoken.tokenproxy": "fas fa-key",
     },
     "order_with_respect_to": [
         "users.User",
