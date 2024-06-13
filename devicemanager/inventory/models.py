@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Iterable, Optional
 
 from colorfield.fields import ColorField
@@ -294,7 +295,7 @@ class DeviceRental(TimeTrackable, LifecycleModel):
         related_name="rentals",
         verbose_name=_("Borrower"),
     )
-    rental_date = models.DateField(auto_now_add=True, verbose_name=_("Rental Date"))
+    rental_date = models.DateField(default=datetime.now, verbose_name=_("Rental Date"))
     return_date = models.DateField(null=True, blank=True, verbose_name=_("Return Date"))
 
     class Meta:
