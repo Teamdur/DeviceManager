@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Iterable, Optional
 
 from colorfield.fields import ColorField
@@ -172,11 +173,11 @@ class Device(models.Model):
         return f"{self.device_model} {self.inventory_number}"
 
     LABELS_CHOICES = (
-        ("building", _("Building")),
         ("room", _("Room")),
         ("owner", _("Owner")),
-        ("serial_number", _("Serial Number")),
         ("inventory_number", _("Inventory Number")),
+        ("device_model", _("Device Model")),
+        ("serial_number", _("Serial Number")),
     )
 
     @staticmethod
@@ -193,8 +194,8 @@ class Device(models.Model):
             include_labels = qrcode_config.included_labels
 
         labels = {
-            "building": (qrcode_config.building_label, self.room.building.name if self.room else ""),
-            "room": (qrcode_config.room_label, self.room.room_number if self.room else ""),
+            "room": (qrcode_config.room_label, str(self.room) if self.room else ""),
+            "device_model": (qrcode_config.device_model_label, str(self.device_model)),
             "owner": (qrcode_config.owner_label, self.guardian.get_full_name() if self.guardian else ""),
             "serial_number": (qrcode_config.serial_number_label, self.serial_number),
             "inventory_number": (
@@ -204,7 +205,9 @@ class Device(models.Model):
         }
 
         return "\n".join(
-            f"{labels[label][0]}: {str(labels[label][1] or '')}" for label in include_labels if label in labels
+            f"{labels[label][0] if labels[label][0] else ""}{":" if labels[label][0] else ""} {str(labels[label][1] or '')}"
+            for label in include_labels
+            if label in labels
         )
 
 
@@ -221,11 +224,17 @@ class QRCodeGenerationConfig(LifecycleModel):
     active = models.BooleanField(verbose_name=_("Configuration in use"), default=False)
     fill_color = ColorField(default="#000000", verbose_name=_("Fill Color"))
     back_color = ColorField(default="#FFFFFF", verbose_name=_("Background Color"))
-    building_label = models.CharField(max_length=15, default="Building", verbose_name=_("Building Label"))
-    room_label = models.CharField(max_length=15, default="Room", verbose_name=_("Room Label"))
-    owner_label = models.CharField(max_length=15, default="Owner", verbose_name=_("Owner Label"))
-    serial_number_label = models.CharField(max_length=15, default="SN", verbose_name=_("Serial Number Label"))
-    inventory_number_label = models.CharField(max_length=15, default="IN", verbose_name=_("Inventory Number Label"))
+    room_label = models.CharField(max_length=15, default="Room", verbose_name=_("Room Label"), null=True, blank=True)
+    device_model_label = models.CharField(
+        max_length=15, default="Model", verbose_name=_("Model Label"), null=True, blank=True
+    )
+    owner_label = models.CharField(max_length=15, default="Owner", verbose_name=_("Owner Label"), null=True, blank=True)
+    serial_number_label = models.CharField(
+        max_length=15, default="SN", verbose_name=_("Serial Number Label"), null=True, blank=True
+    )
+    inventory_number_label = models.CharField(
+        max_length=15, default="IN", verbose_name=_("Inventory Number Label"), null=True, blank=True
+    )
     included_labels = ListJSONField(verbose_name=_("Included Labels"), default=Device.default_labels_include)
     print_dpi = models.PositiveIntegerField(default=72, verbose_name=_("Print DPI"), validators=[MinValueValidator(1)])
     pdf_page_width_mm = models.PositiveIntegerField(
@@ -294,7 +303,7 @@ class DeviceRental(TimeTrackable, LifecycleModel):
         related_name="rentals",
         verbose_name=_("Borrower"),
     )
-    rental_date = models.DateField(auto_now_add=True, verbose_name=_("Rental Date"))
+    rental_date = models.DateField(default=datetime.now, verbose_name=_("Rental Date"))
     return_date = models.DateField(null=True, blank=True, verbose_name=_("Return Date"))
 
     class Meta:

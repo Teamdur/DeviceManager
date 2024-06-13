@@ -1,7 +1,9 @@
 import io
+from math import ceil
 from typing import Iterable, Type
 
 import pymupdf
+from django.conf import settings
 from django.db.models import QuerySet
 from PIL import Image, ImageDraw, ImageFont
 from qrcode.main import QRCode
@@ -43,9 +45,9 @@ class QRCodeGenerator:
 
     def _draw_title(self, img: Image, title: str) -> Image:
         im_width, im_height = img.size
-        # Font size is 20% of the box size
-        font_size = self.config.unit_converter.cm_to_px(self.box_size / 5)
-        font = ImageFont.load_default(size=font_size)
+        # Font size is 20% of the box size]
+        font_size = self.config.unit_converter.cm_to_px(self.box_size / 4)
+        font = ImageFont.truetype(f"{settings.BASE_DIR}/devicemanager/fonts/roboto.ttf", font_size)
 
         text_lines = title.split("\n")
         text_width = max(font.getbbox(line)[2] for line in text_lines)
@@ -108,11 +110,12 @@ class QRCodePDFGenerator:
         tile_width = max(qr.size[0] for qr in qr_codes)
         tile_height = max(qr.size[1] for qr in qr_codes)
 
-        num_horizontal_tiles = self.page_width_px // tile_width
-        num_vertical_tiles = self.page_height_px // tile_height
+        num_horizontal_tiles = max(self.page_width_px // tile_width, 1)
+        num_vertical_tiles = max(self.page_height_px // tile_height, 1)
 
-        tiles_per_page = num_horizontal_tiles * num_vertical_tiles
-        num_pages = max(len(self.devices) // tiles_per_page, 1)
+        tiles_per_page = max(num_horizontal_tiles * num_vertical_tiles, 1)
+
+        num_pages = ceil(max(len(self.devices) / tiles_per_page, 1))
 
         for _ in range(num_pages):
             self.add_page()
