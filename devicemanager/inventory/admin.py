@@ -1,5 +1,8 @@
+from typing import Any
+
 from django.contrib import admin
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Value
+from django.db.models.functions import Concat
 from django.http import HttpRequest, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -84,8 +87,27 @@ class DeviceAdmin(admin.ModelAdmin):
         "date_rented",
     )
     ordering = ("device_model__name",)
-    search_fields = ("uuid", "serial_number", "inventory_number")
-    list_filter = ("device_model__device_type", "device_model__manufacturer")
+    search_fields = (
+        "id",
+        "serial_number",
+        "inventory_number",
+        "device_model__device_type__short_name",
+        "device_model__device_type__name",
+        "device_model__manufacturer__name",
+        "device_manufacturer_model",
+        "room__room_number",
+        "room__building__name",
+        "guardian__username",
+    )
+    list_filter = (
+        "serial_number",
+        "inventory_number",
+        "device_model__device_type__name",
+        "device_model__manufacturer__name",
+        "room__room_number",
+        "room__building__name",
+        "guardian__username",
+    )
     actions = ["generate_qr_codes"]
     inlines = [DeviceRentalInline]
 
@@ -129,6 +151,17 @@ class DeviceAdmin(admin.ModelAdmin):
     def date_rented(self, obj: Device) -> str:
         rental = obj.rentals.filter(return_date=None).first()
         return rental.rental_date if rental else "-"
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
+        qs = super().get_queryset(request)
+        qs = qs.annotate(
+            device_manufacturer_model=Concat(
+                "device_model__manufacturer__name",
+                Value(" "),
+                "device_model__name",
+            )
+        )
+        return qs
 
 
 @admin.register(QRCodeGenerationConfig)
