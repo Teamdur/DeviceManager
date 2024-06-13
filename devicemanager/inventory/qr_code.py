@@ -110,8 +110,8 @@ class QRCodePDFGenerator:
         tile_width = max(qr.size[0] for qr in qr_codes)
         tile_height = max(qr.size[1] for qr in qr_codes)
 
-        num_horizontal_tiles = self.page_width_px // tile_width
-        num_vertical_tiles = self.page_height_px // tile_height
+        num_horizontal_tiles = max(self.page_width_px // tile_width, 1)
+        num_vertical_tiles = max(self.page_height_px // tile_height, 1)
 
         tiles_per_page = max(num_horizontal_tiles * num_vertical_tiles, 1)
 

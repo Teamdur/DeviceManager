@@ -69,7 +69,7 @@ class QRCodeGenerateQuerySerializer(serializers.ModelSerializer):
 class QRCodeDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
-        fields = ["id", "serial_number", "inventory_number"]
+        fields = ["id", "serial_number", "inventory_number", "room", "device_model", "guardian"]
 
 
 class FacultySerializer(serializers.ModelSerializer):

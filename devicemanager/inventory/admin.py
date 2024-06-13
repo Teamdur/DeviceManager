@@ -183,11 +183,11 @@ class QRCodeGenerationConfigAdmin(admin.ModelAdmin):
             _("QR Code Labels"),
             {
                 "fields": (
-                    "serial_number_label",
-                    "inventory_number_label",
-                    "building_label",
                     "room_label",
                     "owner_label",
+                    "inventory_number_label",
+                    "device_model_label",
+                    "serial_number_label",
                     "included_labels",
                 )
             },
