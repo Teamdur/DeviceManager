@@ -1,12 +1,17 @@
 from typing import Any
 
 from django.contrib import admin
-from django.db.models import QuerySet, Value
+from django.db.models import BooleanField, Case, Count, Q, QuerySet, Value, When
 from django.db.models.functions import Concat
 from django.http import HttpRequest, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from devicemanager.inventory.filters import (
+    DeviceIsRentedFilter,
+    DeviceTypesForRentalFilter,
+    RentalIsRentedFilter,
+)
 from devicemanager.inventory.forms import (
     DeviceForm,
     DeviceRentalForm,
@@ -85,6 +90,7 @@ class DeviceAdmin(admin.ModelAdmin):
         "inventory_number",
         "current_rental",
         "date_rented",
+        "is_rented",
     )
     ordering = ("device_model__name",)
     search_fields = (
@@ -100,13 +106,14 @@ class DeviceAdmin(admin.ModelAdmin):
         "guardian__username",
     )
     list_filter = (
+        "device_model__device_type",
+        "device_model__manufacturer",
+        "device_model",
+        "room",
+        "guardian",
         "serial_number",
         "inventory_number",
-        "device_model__device_type__name",
-        "device_model__manufacturer__name",
-        "room__room_number",
-        "room__building__name",
-        "guardian__username",
+        DeviceIsRentedFilter,
     )
     actions = ["generate_qr_codes"]
     inlines = [DeviceRentalInline]
@@ -152,6 +159,10 @@ class DeviceAdmin(admin.ModelAdmin):
         rental = obj.rentals.filter(return_date=None).first()
         return rental.rental_date if rental else "-"
 
+    @admin.display(description=_("Is rented"), boolean=True)
+    def is_rented(self, obj: Device) -> bool:
+        return obj.is_rented
+
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         qs = super().get_queryset(request)
         qs = qs.annotate(
@@ -159,6 +170,16 @@ class DeviceAdmin(admin.ModelAdmin):
                 "device_model__manufacturer__name",
                 Value(" "),
                 "device_model__name",
+            )
+        )
+        qs = qs.annotate(
+            rental_count=Count("rentals", distinct=True),
+        )
+        qs = qs.annotate(
+            is_rented=Case(
+                When(Q(rentals__return_date__isnull=True) & Q(rental_count__gt=0), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
             )
         )
         return qs
@@ -207,10 +228,28 @@ class DeviceRentalAdmin(admin.ModelAdmin):
         "rental_date",
         "return_date",
     )
+    list_filter = (DeviceTypesForRentalFilter, "borrower", RentalIsRentedFilter)
+    search_fields = ("device_manufacturer_model", "borrower__username", "rental_date", "return_date")
     ordering = ("rental_date",)
 
     form = DeviceRentalForm
 
     @admin.display(description=_("Is rented"), boolean=True)
     def is_rented(self, obj: DeviceRental) -> bool:
-        return obj.return_date is None
+        return obj.is_rented
+
+    @admin.display(description=_("Device model"))
+    def device_manufacturer_model(self, obj: DeviceRental) -> str:
+        return obj.device.device_manufacturer_model
+
+    def get_queryset(self, request: HttpRequest):
+        qs = super().get_queryset(request)
+        qs = qs.annotate(
+            device_manufacturer_model=Concat(
+                "device__device_model__manufacturer__name",
+                Value(" "),
+                "device__device_model__name",
+            ),
+            is_rented=Case(When(return_date=None, then=Value(True)), default=Value(False), output_field=BooleanField()),
+        )
+        return qs
