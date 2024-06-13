@@ -88,8 +88,8 @@ class Manufacturer(models.Model):
 
 class DeviceType(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=256, verbose_name=_("Device Type Name"))
-    short_name = models.CharField(max_length=60, verbose_name=_("Device short name"))
+    name = models.CharField(max_length=256, verbose_name=_("Device Type"))
+    short_name = models.CharField(max_length=60, verbose_name=_("Device Type short name"))
 
     class Meta:
         verbose_name = _("Device Type")
@@ -170,7 +170,7 @@ class Device(models.Model):
         verbose_name_plural = _("Devices")
 
     def __str__(self):
-        return f"{self.device_model} {self.inventory_number}"
+        return f"{self.device_model} {self.inventory_number or ''}"
 
     LABELS_CHOICES = (
         ("room", _("Room")),
