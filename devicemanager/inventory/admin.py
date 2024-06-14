@@ -1,7 +1,16 @@
 from typing import Any
 
 from django.contrib import admin
-from django.db.models import BooleanField, Case, Count, Q, QuerySet, Value, When
+from django.db.models import (
+    BooleanField,
+    Case,
+    Count,
+    Prefetch,
+    Q,
+    QuerySet,
+    Value,
+    When,
+)
 from django.db.models.functions import Concat
 from django.http import HttpRequest, HttpResponseRedirect
 from django.urls import reverse
@@ -165,6 +174,15 @@ class DeviceAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         qs = super().get_queryset(request)
+        qs = qs.select_related(
+            "room__building",
+            "device_model__manufacturer",
+            "device_model__device_type",
+            "device_model",
+            "room__building",
+            "room",
+            "guardian",
+        ).prefetch_related(Prefetch("rentals", queryset=DeviceRental.objects.select_related("borrower")))
         qs = qs.annotate(
             device_manufacturer_model=Concat(
                 "device_model__manufacturer__name",
@@ -251,5 +269,5 @@ class DeviceRentalAdmin(admin.ModelAdmin):
                 "device__device_model__name",
             ),
             is_rented=Case(When(return_date=None, then=Value(True)), default=Value(False), output_field=BooleanField()),
-        )
+        ).select_related("device__device_model__manufacturer", "device__device_model", "borrower")
         return qs
