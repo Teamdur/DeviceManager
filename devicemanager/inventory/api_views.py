@@ -2,6 +2,7 @@ from django.http import FileResponse
 from django.utils.functional import cached_property
 from drf_spectacular.utils import extend_schema
 from rest_framework.generics import GenericAPIView
+from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.viewsets import ModelViewSet
 
 from devicemanager.inventory.models import (
@@ -15,7 +16,7 @@ from devicemanager.inventory.models import (
     QRCodeGenerationConfig,
     Room,
 )
-from devicemanager.inventory.qr_code import QRCodePDFGenerator
+from devicemanager.inventory.qr_code import DeviceQRCodeGenerator
 from devicemanager.inventory.serializers import (
     BuildingSerializer,
     DeviceModelSerializer,
@@ -24,7 +25,6 @@ from devicemanager.inventory.serializers import (
     DeviceTypeSerializer,
     FacultySerializer,
     ManufacturerSerializer,
-    QRCodeDataSerializer,
     QRCodeGenerateQuerySerializer,
     RoomSerializer,
 )
@@ -33,35 +33,72 @@ from devicemanager.inventory.serializers import (
 class QRCodeGenerateView(GenericAPIView):
     queryset = Device.objects.all()
     lookup_field = "ids"
-    serializer_class = QRCodeDataSerializer
-
-    def get_queryset(self):
-        filter_params = self.search_params["ids"]
-        qs = self.queryset.filter(pk__in=filter_params)
-        return qs
+    serializer_class = QRCodeGenerateQuerySerializer
+    parser_classes = (FormParser, JSONParser)
 
     @cached_property
-    def search_params(self):
-        params = self.request.query_params
-        serializer = QRCodeGenerateQuerySerializer(data=params)
-        serializer.is_valid(raise_exception=True)
-        return serializer.validated_data
+    def request_data(self):
+        if self.request.method == "GET":
+            return self.request.query_params
+        return self.request.data
 
     @cached_property
     def qr_generation_config(self):
-        stored_config = QRCodeGenerationConfig.get_active_configuration()
+        config = QRCodeGenerationConfig.get_active_configuration()
+        serializer = self.get_serializer(data=self.request_data, instance=config, partial=True)
+        serializer.is_valid(raise_exception=True)
+        for key, value in serializer.validated_data.items():
+            setattr(config, key, value)
+        return config
 
-        for key, value in self.search_params.items():
-            setattr(stored_config, key, value)
+    @cached_property
+    def device_ids(self):
+        serializer = self.get_serializer(data=self.request_data)
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data["ids"]
 
-        return stored_config
+    @cached_property
+    def qr_generator(self):
+        return DeviceQRCodeGenerator(
+            pdf_width_mm=self.qr_generation_config.label_width_mm,
+            pdf_height_mm=self.qr_generation_config.label_height_mm,
+            pdf_padding_mm=self.qr_generation_config.label_padding_mm,
+            gap_x_mm=self.qr_generation_config.label_horizontal_spacing_mm,
+            gap_y_mm=self.qr_generation_config.label_vertical_spacing_mm,
+            title_gap_mm=self.qr_generation_config.label_title_gap_mm,
+            dpi=self.qr_generation_config.dpi,
+            inv_prefix=self.qr_generation_config.inv_prefix,
+            sn_prefix=self.qr_generation_config.sn_prefix,
+            font_size_small=self.qr_generation_config.font_size_small,
+            font_size=self.qr_generation_config.font_size,
+            font_size_large=self.qr_generation_config.font_size_large,
+            fill_color=self.qr_generation_config.fill_color,
+            background_color=self.qr_generation_config.background_color,
+        )
+
+    def get_device_queryset(self, ids: list[int]):
+        return Device.objects.filter(pk__in=ids).select_related("room", "owner", "device_model")
+
+    def get_context_data(self, *args, **kwargs):
+        qs = self.get_device_queryset(self.device_ids)
+
+        for device in qs:
+            self.qr_generator.add_device(device)
+
+        pdf = self.qr_generator.build_pdf()
+        return pdf
 
     @extend_schema(parameters=[QRCodeGenerateQuerySerializer])
-    def get(self, request, *args, **kwargs):
-        devices = self.get_queryset()
-        pdf = QRCodePDFGenerator(devices, QRCodeDataSerializer, self.qr_generation_config).run()
+    def get(self, *args, **kwargs):
+        pdf = self.get_context_data()
 
-        return FileResponse(pdf, content_type="application/pdf")
+        return FileResponse(pdf, filename="device_labels.pdf", content_type="application/pdf")
+
+    @extend_schema(parameters=[QRCodeGenerateQuerySerializer])
+    def post(self, *args, **kwargs):
+        pdf = self.get_context_data()
+
+        return FileResponse(pdf, filename="device_labels.pdf", content_type="application/pdf")
 
 
 class FacultyViewSet(ModelViewSet):

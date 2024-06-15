@@ -12,8 +12,9 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import Concat
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from devicemanager.inventory.filters import (
@@ -43,7 +44,7 @@ from devicemanager.inventory.models import (
 @admin.register(Faculty)
 class FacultyAdmin(admin.ModelAdmin):
     list_display = ("short_name", "full_name")
-    search_fields = ("short_name", "full_name")
+    search_fields = ("short_name", "full_nameS")
 
 
 @admin.register(Building)
@@ -82,7 +83,7 @@ class DeviceModelAdmin(admin.ModelAdmin):
 
 class DeviceRentalInline(admin.StackedInline):
     model = DeviceRental
-    extra = 1
+    extra = 0
     formset = DeviceRentalFormSet
 
 
@@ -94,7 +95,7 @@ class DeviceAdmin(admin.ModelAdmin):
         "device_model",
         "get_room",
         "building",
-        "guardian",
+        "owner",
         "serial_number",
         "inventory_number",
         "current_rental",
@@ -112,14 +113,14 @@ class DeviceAdmin(admin.ModelAdmin):
         "device_manufacturer_model",
         "room__room_number",
         "room__building__name",
-        "guardian__username",
+        "owner__username",
     )
     list_filter = (
         "device_model__device_type",
         "device_model__manufacturer",
         "device_model",
         "room",
-        "guardian",
+        "owner",
         "serial_number",
         "inventory_number",
         DeviceIsRentedFilter,
@@ -132,9 +133,24 @@ class DeviceAdmin(admin.ModelAdmin):
     @admin.action(description=_("Generate QR Codes"))
     def generate_qr_codes(self, request: HttpRequest, queryset: QuerySet):
         selected_ids = queryset.values_list("pk", flat=True)
-        return HttpResponseRedirect(
-            reverse("inventory:qr-generate") + f"?ids={','.join(str(id) for id in selected_ids)}"
+        url = reverse("inventory:qr-generate")
+
+        # Create a hidden form to submit the POST request
+        # This ensure that we don't have to deal with extremly long URLs of IDs
+        html = """
+        <form id="qr-generate-form" action="{url}" method="post" style="display:none;">
+            {csrf_token}
+            <input type="hidden" name="ids" value="{ids}">
+        </form>
+        <script type="text/javascript">
+            document.getElementById('qr-generate-form').submit();
+        </script>
+        """.format(
+            url=url,
+            csrf_token=f'<input type="hidden" name="csrfmiddlewaretoken" value="{request.COOKIES["csrftoken"]}">',
+            ids=",".join(str(id) for id in selected_ids),
         )
+        return HttpResponse(mark_safe(html))
 
     @admin.display(description=_("Current Rental"))
     def current_rental(self, obj: Device) -> str:
@@ -181,7 +197,7 @@ class DeviceAdmin(admin.ModelAdmin):
             "device_model",
             "room__building",
             "room",
-            "guardian",
+            "owner",
         ).prefetch_related(Prefetch("rentals", queryset=DeviceRental.objects.select_related("borrower")))
         qs = qs.annotate(
             device_manufacturer_model=Concat(
@@ -195,7 +211,10 @@ class DeviceAdmin(admin.ModelAdmin):
         )
         qs = qs.annotate(
             is_rented=Case(
-                When(Q(rentals__return_date__isnull=True) & Q(rental_count__gt=0), then=Value(True)),
+                When(
+                    Q(rentals__return_date__isnull=True) & Q(rental_count__gt=0),
+                    then=Value(True),
+                ),
                 default=Value(False),
                 output_field=BooleanField(),
             )
@@ -205,35 +224,62 @@ class DeviceAdmin(admin.ModelAdmin):
 
 @admin.register(QRCodeGenerationConfig)
 class QRCodeGenerationConfigAdmin(admin.ModelAdmin):
-    list_display = ("id", "active", "qr_code_size_cm", "qr_code_margin_mm")
-    list_filter = ("active",)
+    list_display = (
+        "id",
+        "label_size",
+        "active",
+        "dpi",
+        "spacing",
+        "font_sizes",
+    )
+    list_filter = ("active", "dpi")
+    search_fields = ("id", "dpi", "fill_color", "background_color")
 
     fieldsets = (
         (
-            _("QR Code Params"),
-            {"fields": ("active", "qr_code_size_cm", "qr_code_margin_mm")},
+            _("Label Settings"),
+            {"fields": ("label_width_mm", "label_height_mm", "dpi", "active")},
         ),
         (
-            _("PDF Settings"),
-            {"fields": ("pdf_page_width_mm", "pdf_page_height_mm", "print_dpi")},
-        ),
-        (_("Colors"), {"fields": ("fill_color", "back_color")}),
-        (
-            _("QR Code Labels"),
+            _("Spacing & Padding"),
             {
                 "fields": (
-                    "room_label",
-                    "owner_label",
-                    "inventory_number_label",
-                    "device_model_label",
-                    "serial_number_label",
-                    "included_labels",
+                    "label_padding_mm",
+                    "label_horizontal_spacing_mm",
+                    "label_vertical_spacing_mm",
+                    "label_title_gap_mm",
+                )
+            },
+        ),
+        (
+            _("Font Settings"),
+            {"fields": ("font_size_small", "font_size", "font_size_large")},
+        ),
+        (_("Colors"), {"fields": ("fill_color", "background_color")}),
+        (
+            _("Field settings"),
+            {
+                "fields": (
+                    "inv_prefix",
+                    "sn_prefix",
                 )
             },
         ),
     )
 
     form = QRCodeGenerationConfigForm
+
+    @admin.display(description=_("Label Size"))
+    def label_size(self, obj: QRCodeGenerationConfig) -> str:
+        return f"{obj.label_width_mm} x {obj.label_height_mm} mm"
+
+    @admin.display(description=_("Font Sizes"))
+    def font_sizes(self, obj: QRCodeGenerationConfig) -> str:
+        return f"S: {obj.font_size_small}, M: {obj.font_size}, L: {obj.font_size_large}"
+
+    @admin.display(description=_("Spacing"))
+    def spacing(self, obj: QRCodeGenerationConfig) -> str:
+        return f"↔ {obj.label_horizontal_spacing_mm} mm, ↕ {obj.label_vertical_spacing_mm} mm"
 
 
 @admin.register(DeviceRental)
@@ -247,7 +293,12 @@ class DeviceRentalAdmin(admin.ModelAdmin):
         "return_date",
     )
     list_filter = (DeviceTypesForRentalFilter, "borrower", RentalIsRentedFilter)
-    search_fields = ("device_manufacturer_model", "borrower__username", "rental_date", "return_date")
+    search_fields = (
+        "device_manufacturer_model",
+        "borrower__username",
+        "rental_date",
+        "return_date",
+    )
     ordering = ("rental_date",)
 
     form = DeviceRentalForm
@@ -268,6 +319,10 @@ class DeviceRentalAdmin(admin.ModelAdmin):
                 Value(" "),
                 "device__device_model__name",
             ),
-            is_rented=Case(When(return_date=None, then=Value(True)), default=Value(False), output_field=BooleanField()),
+            is_rented=Case(
+                When(return_date=None, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            ),
         ).select_related("device__device_model__manufacturer", "device__device_model", "borrower")
         return qs
