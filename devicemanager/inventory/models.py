@@ -1,8 +1,6 @@
 from datetime import datetime
-from typing import Iterable, Optional
 
 from colorfield.fields import ColorField
-from distlib.util import cached_property
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Index
@@ -18,9 +16,7 @@ from django_lifecycle import (
 from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldValueIs
 
 from devicemanager.users.models import User
-from devicemanager.utils.fields import ListJSONField
 from devicemanager.utils.models import TimeTrackable
-from devicemanager.utils.units import UnitConverter
 
 
 class Faculty(models.Model):
@@ -156,7 +152,7 @@ class Device(models.Model):
         null=True,
         blank=True,
     )
-    guardian = models.ForeignKey(
+    owner = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         related_name="devices",
@@ -184,68 +180,58 @@ class Device(models.Model):
     def default_labels_include():
         return list(choice[0] for choice in Device.LABELS_CHOICES)
 
-    def get_print_label(
-        self,
-        include_labels: Iterable[str] | None = None,
-        config: Optional["QRCodeGenerationConfig"] = None,
-    ) -> str:
-        qrcode_config = config or QRCodeGenerationConfig.get_active_configuration()
-        if include_labels is None:
-            include_labels = qrcode_config.included_labels
-
-        labels = {
-            "room": (qrcode_config.room_label, str(self.room) if self.room else ""),
-            "device_model": (qrcode_config.device_model_label, str(self.device_model)),
-            "owner": (qrcode_config.owner_label, self.guardian.get_full_name() if self.guardian else ""),
-            "serial_number": (qrcode_config.serial_number_label, self.serial_number),
-            "inventory_number": (
-                qrcode_config.inventory_number_label,
-                self.inventory_number,
-            ),
-        }
-
-        return "\n".join(
-            f"{labels[label][0] if labels[label][0] else ""}{":" if labels[label][0] else ""} {str(labels[label][1] or '')}"
-            for label in include_labels
-            if label in labels
-        )
-
 
 class QRCodeGenerationConfig(LifecycleModel):
     id = models.AutoField(primary_key=True, verbose_name=_("QR Code Generation Config ID"))
-    qr_code_size_cm = models.PositiveIntegerField(
-        verbose_name=_("QR Code Size in cm"),
-        default=5,
+    label_width_mm = models.PositiveIntegerField(
+        verbose_name=_("Label Width in mm"),
+        default=50,
         validators=[MinValueValidator(1)],
     )
-    qr_code_margin_mm = models.PositiveIntegerField(
-        verbose_name=_("QR Code Margin"), default=3, validators=[MinValueValidator(1)]
+    label_height_mm = models.PositiveIntegerField(
+        verbose_name=_("Label Height in mm"),
+        default=30,
+        validators=[MinValueValidator(1)],
     )
-    active = models.BooleanField(verbose_name=_("Configuration in use"), default=False)
+    label_padding_mm = models.PositiveIntegerField(
+        verbose_name=_("Label Padding in mm"),
+        default=2,
+    )
+    label_horizontal_spacing_mm = models.PositiveIntegerField(
+        verbose_name=_("Label Horizontal Spacing in mm"),
+        default=2,
+    )
+    label_vertical_spacing_mm = models.PositiveIntegerField(
+        verbose_name=_("Label Vertical Spacing in mm"),
+        default=1,
+    )
+    label_title_gap_mm = models.PositiveIntegerField(
+        verbose_name=_("Label gap between room and rest of the fields in mm"), default=2
+    )
+    dpi = models.PositiveIntegerField(
+        verbose_name=_("DPI"),
+        default=300,
+        validators=[MinValueValidator(1)],
+    )
+    font_size_small = models.PositiveIntegerField(verbose_name=_("Small Font Size [pt]"), default=14)
+    font_size = models.PositiveIntegerField(verbose_name=_("Font Size [pt]"), default=18)
+    font_size_large = models.PositiveIntegerField(verbose_name=_("Large Font Size [pt]"), default=28)
     fill_color = ColorField(default="#000000", verbose_name=_("Fill Color"))
-    back_color = ColorField(default="#FFFFFF", verbose_name=_("Background Color"))
-    room_label = models.CharField(max_length=15, default="Room", verbose_name=_("Room Label"), null=True, blank=True)
-    device_model_label = models.CharField(
-        max_length=15, default="Model", verbose_name=_("Model Label"), null=True, blank=True
+    background_color = ColorField(default="#FFFFFF", verbose_name=_("Background Color"))
+    active = models.BooleanField(verbose_name=_("Configuration in use"), default=False)
+    inv_prefix = models.CharField(
+        max_length=15,
+        default="inv:",
+        verbose_name=_("Inventory Number Prefix"),
+        null=True,
+        blank=True,
     )
-    owner_label = models.CharField(max_length=15, default="Owner", verbose_name=_("Owner Label"), null=True, blank=True)
-    serial_number_label = models.CharField(
-        max_length=15, default="SN", verbose_name=_("Serial Number Label"), null=True, blank=True
-    )
-    inventory_number_label = models.CharField(
-        max_length=15, default="IN", verbose_name=_("Inventory Number Label"), null=True, blank=True
-    )
-    included_labels = ListJSONField(verbose_name=_("Included Labels"), default=Device.default_labels_include)
-    print_dpi = models.PositiveIntegerField(default=72, verbose_name=_("Print DPI"), validators=[MinValueValidator(1)])
-    pdf_page_width_mm = models.PositiveIntegerField(
-        default=210,
-        verbose_name=_("PDF Page Width in mm"),
-        validators=[MinValueValidator(100)],
-    )
-    pdf_page_height_mm = models.PositiveIntegerField(
-        default=297,
-        verbose_name=_("PDF Page Height in mm"),
-        validators=[MinValueValidator(100)],
+    sn_prefix = models.CharField(
+        max_length=15,
+        default="sn:",
+        verbose_name=_("Serial Number Prefix"),
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -263,7 +249,7 @@ class QRCodeGenerationConfig(LifecycleModel):
     @hook(
         BEFORE_CREATE,
     )
-    def ensure_one_active_config_present(self):
+    def _ensure_one_active_config_present(self):
         active_config_count = QRCodeGenerationConfig.objects.filter(active=True).count()
         if active_config_count == 0:
             self.active = True
@@ -276,17 +262,6 @@ class QRCodeGenerationConfig(LifecycleModel):
 
     def __str__(self):
         return f"QR Code Generation Config {self.id}"
-
-    @cached_property
-    def unit_converter(self):
-        return UnitConverter(dpi=self.print_dpi)
-
-    @cached_property
-    def pdf_page_width_height_px(self):
-        return (
-            self.unit_converter.mm_to_px(self.pdf_page_width_mm),
-            self.unit_converter.mm_to_px(self.pdf_page_height_mm),
-        )
 
 
 class DeviceRental(TimeTrackable, LifecycleModel):
@@ -311,7 +286,7 @@ class DeviceRental(TimeTrackable, LifecycleModel):
         verbose_name_plural = _("Device Rentals")
 
     @hook(BEFORE_SAVE, condition=WhenFieldValueIs("return_date", None))
-    def ensure_device_is_rented_once(self):
+    def _ensure_device_is_rented_once(self):
         other_device_rentals = DeviceRental.objects.filter(device=self.device, return_date=None).exclude(pk=self.pk)
         if other_device_rentals.exists():
             raise ValueError("Device is already rented")

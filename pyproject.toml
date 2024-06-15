@@ -30,7 +30,7 @@ dependencies = [
     "phonenumbers~=8.13.35",
     "django-debug-toolbar~=4.3.0",
     "django-allauth~=0.61.1",
-    "pymupdf~=1.24.3"
+    "reportlab==4.2.0",
 ]
 
 [project.optional-dependencies]
@@ -43,10 +43,7 @@ dev = [
     "factory-boy~=3.3.0",
     "pytest-django~=4.8.0",
 ]
-prod = [
-    "gunicorn==22.0.0",
-    "distlib"
-]
+prod = ["gunicorn==22.0.0", "distlib"]
 
 [tool.isort]
 profile = "black"

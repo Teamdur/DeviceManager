@@ -91,6 +91,12 @@ cffi==1.16.0 \
     # via
     #   -c requirements.txt
     #   cryptography
+chardet==5.2.0 \
+    --hash=sha256:1b3b6ff479a8c414bc3fa2c0852995695c4a026dcd6d0633b2dd092ca39c1cf7 \
+    --hash=sha256:e1cf59446890a00105fe7b7912492ea04b6e6f06d4b742b2c788469e34c82970
+    # via
+    #   -c requirements.txt
+    #   reportlab
 charset-normalizer==3.3.2 \
     --hash=sha256:06435b539f889b1f6f4ac1758871aae42dc3a8c0e24ac9e60c2384973ad73027 \
     --hash=sha256:06a81e93cd441c56a9b65d8e1d043daeb97a3d0856d177d5c90ba85acb3db087 \
@@ -558,6 +564,7 @@ pillow==10.3.0 \
     #   -c requirements.txt
     #   devicemanager (pyproject.toml)
     #   django-colorfield
+    #   reportlab
 pycparser==2.22 \
     --hash=sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6 \
     --hash=sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc
@@ -576,52 +583,6 @@ pyjwt[crypto]==2.8.0 \
     # via
     #   -c requirements.txt
     #   django-allauth
-pymupdf==1.24.3 \
-    --hash=sha256:06a8a3226c9ec97c5e1df8cd16ec29b5df83d04ae88e9e0f5f4e25fcc1b997a1 \
-    --hash=sha256:0d4b6caf5ad25b7bd654ad4d42b8b3a00683b742bc5a81b8aeface79811386d5 \
-    --hash=sha256:14b2459e1a7e4dbf9ec6026e6056ccba6868bdfff1ffb346fd910108a61be095 \
-    --hash=sha256:171313ee03e031437687cf856914eb61f66a5a76eddedc63048a63b69b00474b \
-    --hash=sha256:1de61f186c8367d1647d679bf6a4a77198751b378f9b67958a3b5d59adbc8c95 \
-    --hash=sha256:28e8c6c29de2951e29f98f17752eff0e80776fca7fe7ed5c7368363dff887c6c \
-    --hash=sha256:34ab87e6d0f79eea9b632ed0401de20aff2622c95aa1a57fd17b49401c22c906 \
-    --hash=sha256:39acbac2854ef5b58f28c71bb19e84840771a771ec09cb33c4e66e2679c3b419 \
-    --hash=sha256:3ceca02b143efe6b6f159d64a2f0e0aa32d0670894149a7f7144125fe2982da2 \
-    --hash=sha256:401f2da8621f19bc302efa2a404c794b17982dea0e552b48ecd2c3f8d10b4707 \
-    --hash=sha256:45c93944a14b19da3ee9b6d648e609f3ca35b8bca5c1cd16e6addcc59e7816d9 \
-    --hash=sha256:4f084f735e2e2d21f2c76de1abdcb44261889ec01a2842b57e69c89502f74b7a \
-    --hash=sha256:5f4a9ffabbcf8f19f6938484702e393ed6d423516f3e52c9d443162e3e42a884 \
-    --hash=sha256:6b52ee0460db88c71a06677353a0c768a8bb17718aa313462e9847ed1bf53f87 \
-    --hash=sha256:88e52a5c6d0375d27401c08fe7f7894f19db4af31169ba6deb6b3c1453f8b6e0 \
-    --hash=sha256:8d63d850d337c10fa49859697b9517e461b28e6d5d5a80121c72cc518eb0bae0 \
-    --hash=sha256:9df2d5e89810d3708fb8933dbc07505a57bfcb976a72bc559c7f0ccacc054c76 \
-    --hash=sha256:a421b332c257e70d9daed350cebefc043817ae0fd6b361734ee27f98288cc8c7 \
-    --hash=sha256:af412df645fa7c15d2fc9b64edb7031477dc8597d16e278157a760adaea49551 \
-    --hash=sha256:b0ceed71fa62eebd1bf8b55875cd6da7c2f09bbe2067218b68b5deb0d9feaa6e \
-    --hash=sha256:c4df2c50eba8fb8d8ffe63bd4099c57b562d11ed01dcf6cd922c4ea774212a34 \
-    --hash=sha256:c7dfddf19d2a8c734c5439692e87419c86f2621f1f205100355afb3bb43e5675 \
-    --hash=sha256:cc519230e352024111f065a1d32366eea4f1f1034e01515f10dbed709d9ab5ad \
-    --hash=sha256:ce113303b41adb74ae30ebd98761d9bd53477573e47566f05b3b7ff1c7354675 \
-    --hash=sha256:ce4c07355b45e95803d1221cece01be58e32d1d9daec0d1ebc075ad03640c177 \
-    --hash=sha256:cf743d8c7f7261112153525ba7de1d954f9d563b875414814b27da35fb0df2cc \
-    --hash=sha256:e30e8dec04c241739e0e9cf89b8a0317e991889dbca781e30abef228009c8cbd \
-    --hash=sha256:e4b4b2d5700c48a67da278476767488005408fac29426467b5bb437012197c0b \
-    --hash=sha256:e6b9100fa5194be1240b9998643ba122fcffd76149dccda3607455ccfed5fa2b \
-    --hash=sha256:ef2311861a3173072c489dc365827bb26f2c4487f969501afbbf1746478553ea \
-    --hash=sha256:f3572c2a85a12026637d485d6156b7f279a4aac7f474a341e5e06e8943ab2e0b
-    # via
-    #   -c requirements.txt
-    #   devicemanager (pyproject.toml)
-pymupdfb==1.24.3 \
-    --hash=sha256:0d606a10cb828cefc9f864bf67bc9d46e8007af55e643f022b59d378af4151a8 \
-    --hash=sha256:3e7aab000d707c40e3254cd60152897b90952ed9a3567584d70974292f4912ce \
-    --hash=sha256:7cc5da3031d160e0f01dbb88567ddca70adc82f062a3a5b4e2dd2a57646f442c \
-    --hash=sha256:ad51d21086a16199684a3eebcb47d9c8460fc27e7bebae77f5fe64e8c34ebf34 \
-    --hash=sha256:d2ccca660042896d4af479f979ec10674c5a0b3cd2d9ecb0011f08dc82380cce \
-    --hash=sha256:e88289bd4b4afe5966a028774b302f37d4b51dad5c5e6720dd04524910db6c6e \
-    --hash=sha256:f39588fd2b7a63e2456df42cd8925c316202e0eb77d115d9c01ba032b2c9086f
-    # via
-    #   -c requirements.txt
-    #   pymupdf
 pypng==0.20220715.0 \
     --hash=sha256:4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c \
     --hash=sha256:739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1
@@ -709,6 +670,12 @@ referencing==0.35.1 \
     #   -c requirements.txt
     #   jsonschema
     #   jsonschema-specifications
+reportlab==4.2.0 \
+    --hash=sha256:474fb28d63431a5d47d75c90d580393050df7d491a09c7877df3291a2e9f6d0a \
+    --hash=sha256:53630f9d25a7938def3e6a93d723b72a7a5921d34d23cf7a0930adeb2cb0e6c1
+    # via
+    #   -c requirements.txt
+    #   devicemanager (pyproject.toml)
 requests==2.31.0 \
     --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f \
     --hash=sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1

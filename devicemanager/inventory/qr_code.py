@@ -1,142 +1,185 @@
 import io
-from math import ceil
-from typing import Iterable, Type
+import json
+from functools import cache
 
-import pymupdf
+import PIL
+import qrcode
 from django.conf import settings
-from django.db.models import QuerySet
-from PIL import Image, ImageDraw, ImageFont
-from qrcode.main import QRCode
-from rest_framework import serializers
+from PIL.Image import Image
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfbase.pdfmetrics import (
+    getFont,
+    getRegisteredFontNames,
+    registerFont,
+    stringWidth,
+)
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 
-from devicemanager.inventory.models import Device, QRCodeGenerationConfig
-
-
-class QRCodeGenerator:
-    def __init__(self, embedded_data: bytes, config: QRCodeGenerationConfig | None = None) -> None:
-        self.embedded_data = embedded_data
-        self.config = config or QRCodeGenerationConfig.get_active_configuration()
-        self.box_size = self.config.qr_code_size_cm
-        self.border = self.config.qr_code_margin_mm
-        self.fill_color = self.config.fill_color
-        self.back_color = self.config.back_color
-
-    def make_qr_code(self) -> QRCode:
-        qr = QRCode(box_size=self.box_size, border=self.border)
-        qr.add_data(self.embedded_data)
-        qr.make(fit=True)
-        return qr
-
-    def qr_code_image(self, title: str | None = None) -> Image:
-        qr = self.make_qr_code()
-        img = qr.make_image(fill_color=self.fill_color, back_color=self.back_color)
-
-        if title:
-            img = self._draw_title(img, title)
-
-        return img
-
-    def qr_code_png_file(self, title: str | None = None) -> io.BytesIO:
-        bytes_io = io.BytesIO()
-        image = self.qr_code_image(title=title)
-        image.save(bytes_io, format="PNG")
-        bytes_io.seek(0)
-        return bytes_io
-
-    def _draw_title(self, img: Image, title: str) -> Image:
-        im_width, im_height = img.size
-        # Font size is 20% of the box size]
-        font_size = self.config.unit_converter.cm_to_px(self.box_size / 4)
-        font = ImageFont.truetype(f"{settings.BASE_DIR}/devicemanager/fonts/roboto.ttf", font_size)
-
-        text_lines = title.split("\n")
-        text_width = max(font.getbbox(line)[2] for line in text_lines)
-        text_height = sum(font.getbbox(line)[3] for line in text_lines)
-
-        # The width of expanded image needs to accommodate both the image and the text.
-        # The height of expanded image should be as high as the taller one between the image and the text.
-        expanded_width = im_width + text_width
-        expanded_height = max(im_height, text_height)
-
-        # The text will be located beside the QR code, so we do not need the bottom padding.
-        expanded_img = Image.new("RGB", (expanded_width, expanded_height), self.back_color)
-
-        qr_position = (0, (expanded_height - im_height) // 2)  # Center the QR code vertically
-        expanded_img.paste(img, qr_position)
-
-        draw = ImageDraw.Draw(expanded_img)
-
-        # The offset for text should be beside the image, so the y_offset keeps the same.
-        x_offset = im_width
-
-        # Initialize y_offset considering vertical centering of text
-        y_offset = (im_height - text_height) // 2
-
-        # Print the text
-        for line in text_lines:
-            _, _, line_width, line_height = font.getbbox(line)
-            draw.text((x_offset, y_offset), line, fill=self.fill_color, font=font)
-            y_offset += line_height
-
-        return expanded_img
+from devicemanager.inventory.models import Device
+from devicemanager.utils.units import UnitConverter
 
 
-class QRCodePDFGenerator:
+class DeviceQRCodeGenerator:
     def __init__(
         self,
-        devices: Iterable[Device] | QuerySet,
-        serializer_cls: Type[serializers.Serializer],
-        config: QRCodeGenerationConfig | None = None,
+        pdf_width_mm: int,
+        pdf_height_mm: int,
+        pdf_padding_mm: int,
+        gap_x_mm: int,
+        gap_y_mm: int,
+        title_gap_mm: int,
+        inv_prefix: str,
+        sn_prefix: str,
+        dpi: int = 72,
+        font_size: int = 12,
+        font_size_large: int = 16,
+        font_size_small: int = 10,
+        fill_color: str = "#000000",
+        background_color: str = "#FFFFFF",
     ) -> None:
-        self.config = config or QRCodeGenerationConfig.get_active_configuration()
-        self.devices = devices
-        self.serializer_cls = serializer_cls
-        self.pdf = pymupdf.open()
-        self.page_width_px = self.config.unit_converter.mm_to_px(self.config.pdf_page_width_mm)
-        self.page_height_px = self.config.unit_converter.mm_to_px(self.config.pdf_page_height_mm)
+        self._buffer = io.BytesIO()
 
-    def add_page(self):
-        self.pdf.new_page(-1, width=self.page_width_px, height=self.page_height_px)
+        self.unit_converter = UnitConverter(dpi)
+        self.dpi = dpi
+        self.font_size = font_size
+        self.font_size_large = font_size_large
+        self.font_size_small = font_size_small
+        self.fill_color = fill_color
+        self.background_color = background_color
+        self.inv_prefix = inv_prefix
+        self.sn_prefix = sn_prefix
 
-    def gen_qr_image(self, device: Device) -> Image:
-        embedded_data = self.serializer_cls(device).data
-        labels = device.get_print_label(config=self.config)
+        self.pdf_width = self.unit_converter.mm_to_px(pdf_width_mm)
+        self.pdf_height = self.unit_converter.mm_to_px(pdf_height_mm)
+        self.pdf_padding = self.unit_converter.mm_to_px(pdf_padding_mm)
+        self.gap_x = self.unit_converter.mm_to_px(gap_x_mm)
+        self.gap_y = self.unit_converter.mm_to_px(gap_y_mm)
+        self.title_gap = self.unit_converter.mm_to_px(title_gap_mm)
 
-        qr_gen = QRCodeGenerator(embedded_data=embedded_data, config=self.config)
-        return qr_gen.qr_code_image(title=labels)
+        self._canvas = canvas.Canvas(self._buffer, pagesize=(self.pdf_width, self.pdf_height))
+        self._canvas.setFillColor(self.fill_color)
+        self._canvas.setStrokeColor(self.fill_color)
 
-    def run(self):
-        qr_codes = [self.gen_qr_image(device) for device in self.devices]
-        tile_width = max(qr.size[0] for qr in qr_codes)
-        tile_height = max(qr.size[1] for qr in qr_codes)
+        self.standard_font = "Roboto"
+        if "Roboto" not in getRegisteredFontNames():
+            registerFont(TTFont("Roboto", settings.BASE_DIR / "devicemanager/fonts/Roboto.ttf"))
 
-        num_horizontal_tiles = max(self.page_width_px // tile_width, 1)
-        num_vertical_tiles = max(self.page_height_px // tile_height, 1)
-
-        tiles_per_page = max(num_horizontal_tiles * num_vertical_tiles, 1)
-
-        num_pages = ceil(max(len(self.devices) / tiles_per_page, 1))
-
-        for _ in range(num_pages):
-            self.add_page()
-
-        for i, qr in enumerate(qr_codes):
-            page_index = i // tiles_per_page
-            x_index = (i % tiles_per_page) % num_horizontal_tiles
-            y_index = (i % tiles_per_page) // num_horizontal_tiles
-
-            x_offset = x_index * tile_width
-            y_offset = y_index * tile_height
-
-            stream = io.BytesIO()
-            qr.save(stream, format="PNG")
-            stream.seek(0)
-
-            self.pdf[page_index].insert_image(
-                (x_offset, y_offset, x_offset + qr.size[0], y_offset + qr.size[1]), stream=stream, keep_proportion=True
+        self.bold_font = "Roboto-Bold"
+        if "Roboto-Bold" not in getRegisteredFontNames():
+            registerFont(
+                TTFont(
+                    "Roboto-Bold",
+                    settings.BASE_DIR / "devicemanager/fonts/Roboto-Bold.ttf",
+                )
             )
 
-        output = io.BytesIO()
-        self.pdf.save(output)
-        output.seek(0)
-        return output
+    def _generate_qr_code(self, data: bytes) -> tuple[io.BytesIO, tuple[int, int]]:
+        qr_size = self.pdf_height - self.pdf_padding * 2
+        qr = qrcode.QRCode(
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=qr_size,
+            border=0,
+        )
+        qr.add_data(data)
+        qr.make(fit=True)
+
+        img: Image = qr.make_image(fill_color=self.fill_color, back_color=self.background_color)
+        img = img.resize((qr_size, qr_size), PIL.Image.Resampling.NEAREST)
+
+        buffer = io.BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+        return buffer, img.size
+
+    def _draw_text_line(self, text: str, x: int, y: int, font_size: int | None = None, font_name=None) -> None:
+        font_name = font_name or self.standard_font
+        font_size = font_size or self.font_size
+
+        self._canvas.saveState()
+
+        self._canvas.setFont(font_name, font_size)
+        width = stringWidth(text, fontName=font_name, fontSize=font_size)
+        self._canvas.drawString(x, y, text)
+
+        self._canvas.restoreState()
+        return width
+
+    @cache
+    def get_line_height(self, font_size: int | None = None, font_name=None) -> int:
+        font_size = font_size or self.font_size
+        font_name = font_name or self.standard_font
+        face = getFont(font_name).face
+        string_height = (face.ascent - face.descent) / 1000 * font_size * 0.9
+        return int(string_height)
+
+    def add_device(
+        self,
+        device: Device,
+    ) -> None:
+        device_id = device.id
+        building = device.room.building
+        room = device.room.room_number
+        owner = device.owner.get_full_name()
+        inventory_number = device.inventory_number
+        serial_number = device.serial_number
+        manufacturer = device.device_model.manufacturer
+        model = device.device_model.name
+
+        qrcode_data = json.dumps(
+            {
+                "id": f"{device_id:04}",
+                "room": f"{building}-{room}",
+                "own": owner,
+                "inv": inventory_number,
+                "s/n": serial_number,
+            }
+        ).encode("utf-8")
+        qr_img, (qr_img_width, qr_img_height) = self._generate_qr_code(qrcode_data)
+
+        self._canvas.drawImage(
+            image=ImageReader(qr_img),
+            x=self.pdf_padding,
+            y=self.pdf_height - qr_img_height - self.pdf_padding,
+            width=qr_img_width,
+            height=qr_img_height,
+        )
+
+        label_x = self.pdf_padding + qr_img_width + self.gap_x
+        label_y = (
+            self.pdf_height - self.get_line_height(self.font_size_large, font_name=self.bold_font) - self.pdf_padding
+        )
+
+        self._draw_text_line(
+            f"{building} - {room}",
+            label_x,
+            label_y,
+            font_size=self.font_size_large,
+            font_name=self.bold_font,
+        )
+        label_y -= self.get_line_height(self.font_size_large, font_name=self.bold_font) + self.title_gap
+
+        self._draw_text_line(owner, label_x, label_y, self.font_size)
+        label_y -= self.get_line_height(self.font_size) + self.gap_y
+
+        w = self._draw_text_line(f"{self.inv_prefix} ", label_x, label_y, font_size=self.font_size_small)
+        self._draw_text_line(f"{inventory_number}", label_x + w, label_y, self.font_size)
+        label_y -= self.get_line_height(self.font_size) + self.gap_y
+
+        w = self._draw_text_line(
+            f"{manufacturer}",
+            label_x,
+            label_y,
+            font_size=self.font_size,
+            font_name=self.bold_font,
+        )
+        self._draw_text_line(f" - {model}", label_x + w, label_y)
+        label_y -= self.get_line_height(self.font_size) + self.gap_y
+
+        w = self._draw_text_line(f"{self.sn_prefix} ", label_x, label_y, font_size=self.font_size_small)
+        self._draw_text_line(f"{serial_number}", label_x + w, label_y, self.font_size)
+        self._canvas.showPage()
+
+    def build_pdf(self) -> io.BytesIO:
+        self._canvas.save()
+        return io.BytesIO(self._buffer.getvalue())

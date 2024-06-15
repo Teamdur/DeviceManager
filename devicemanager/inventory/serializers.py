@@ -35,11 +35,21 @@ class QRCodeGenerateQueryData(TypedDict):
             "Valid request example",
             summary="Valid request query parameters",
             value={
-                "ids": "1,2,3",
-                "qr_code_size_cm": 5,
-                "qr_code_margin_mm": 5,
-                "fill_color": "#000000",
-                "back_color": "#FFFFFF",
+                "ids": "4,5,6",
+                "label_width_mm": 50,
+                "label_height_mm": 30,
+                "label_padding_mm": 2,
+                "label_horizontal_spacing_mm": 4,
+                "label_vertical_spacing_mm": 3,
+                "label_title_gap_mm": 5,
+                "dpi": 300,
+                "font_size_small": 8,
+                "font_size": 12,
+                "font_size_large": 16,
+                "fill_color": "#FFFFFF",
+                "background_color": "#000000",
+                "inv_prefix": "inv:",
+                "sn_prefix": "s/n:",
             },
             request_only=True,
         )
@@ -52,24 +62,32 @@ class QRCodeGenerateQuerySerializer(serializers.ModelSerializer):
         model = QRCodeGenerationConfig
         fields = (
             "ids",
-            "qr_code_size_cm",
-            "qr_code_margin_mm",
+            "label_width_mm",
+            "label_height_mm",
+            "label_padding_mm",
+            "label_horizontal_spacing_mm",
+            "label_vertical_spacing_mm",
+            "label_title_gap_mm",
+            "dpi",
+            "font_size_small",
+            "font_size",
+            "font_size_large",
             "fill_color",
-            "back_color",
-            "print_dpi",
-            "pdf_page_height_mm",
-            "pdf_page_width_mm",
+            "background_color",
+            "inv_prefix",
+            "sn_prefix",
         )
+
+    def clean_ids(self, value: str) -> list[int]:
+        try:
+            print(value)
+            return super().clean_ids([int(id) for id in value.split(",")])
+        except ValueError:
+            raise serializers.ValidationError("Invalid id")
 
     @property
     def validated_data(self) -> QRCodeGenerateQueryData:
         return super().validated_data
-
-
-class QRCodeDataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Device
-        fields = ["id", "serial_number", "inventory_number", "room", "device_model", "guardian"]
 
 
 class FacultySerializer(serializers.ModelSerializer):
@@ -119,12 +137,20 @@ class DeviceModelSerializer(serializers.ModelSerializer):
 class DeviceSerializer(serializers.ModelSerializer):
     model = serializers.PrimaryKeyRelatedField(many=False, queryset=DeviceModel.objects)
     room = serializers.PrimaryKeyRelatedField(many=False, queryset=Room.objects)
-    guardian = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects)
+    owner = serializers.PrimaryKeyRelatedField(many=False, queryset=User.objects)
     device_rentals = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Device
-        fields = ["id", "model", "serial_number", "inventory_number", "room", "guardian", "device_rentals"]
+        fields = [
+            "id",
+            "model",
+            "serial_number",
+            "inventory_number",
+            "room",
+            "owner",
+            "device_rentals",
+        ]
 
 
 class DeviceRentalSerializer(serializers.ModelSerializer):
@@ -133,4 +159,12 @@ class DeviceRentalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DeviceRental
-        fields = ["id", "device", "borrower", "rental_date", "return_date", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "device",
+            "borrower",
+            "rental_date",
+            "return_date",
+            "created_at",
+            "updated_at",
+        ]
