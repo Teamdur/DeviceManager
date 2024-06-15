@@ -94,6 +94,7 @@ The following environment variables are required to run the app in production:
 - `MARIADB_PASSWORD`: The database password
 - `MARIADB_DATABASE`: The database host
 - `MARIADB_HOST`: The database host address
+- `MARIADB_PORT`: The database port
 
 For email sending, the following environment variables are required:
 

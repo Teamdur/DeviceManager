@@ -13,23 +13,27 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 
 import environ
+from dotenv import load_dotenv
+
+load_dotenv()
 
 env = environ.Env(
     MARIADB_USER=(str, "maria_db"),
     MARIADB_PASSWORD=(str, "maria_db"),
     MARIADB_DATABASE=(str, "device_manager"),
     MARIADB_HOST=(str, "127.0.0.1"),
+    MARIADB_PORT=(str, "3306"),
     GOOGLE_CLIENT_ID=(
         str,
-        "534939113963-72f2ph3fve2e7q374phrq4cl66r6jetd.apps.googleusercontent.com",
+        "",
     ),
-    GOOGLE_CLIENT_SECRET=(str, "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"),
-    GITHUB_CLIENT_ID=(str, "cb3e145ad1d73bc4dfe2"),
-    GITHUB_CLIENT_SECRET=(str, "916cae2335f7a158afe4b93247b85201a444c3c2"),
-    AUTHENTIK_CLIENT_ID=(str, "1XKXhk8IIi3RlLBkS9cCiIjzj0DDnh1NOcOM8epN"),
+    GOOGLE_CLIENT_SECRET=(str, ""),
+    GITHUB_CLIENT_ID=(str, ""),
+    GITHUB_CLIENT_SECRET=(str, ""),
+    AUTHENTIK_CLIENT_ID=(str, ""),
     AUTHENTIK_CLIENT_SECRET=(
         str,
-        "LPKVuxWeiAjPePmHkL3ylGjLNllXBTZBtMz5q9VHvzsEHf45RlEQxlZifWa4Q99rB7gx0OwpNzOh63mIwTRygPhZaPlvV57Ils2hpCIoaCd1JfrfPbJWoNQPOq4yrBxR",
+        "",
     ),
 )
 environ.Env.read_env()
@@ -64,11 +68,8 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.github",
-    "allauth.socialaccount.providers.google",
     "drf_spectacular",
     "colorfield",
-    "devicemanager.users.providers.authentik",
     "devicemanager.inventory",
     "devicemanager.utils",
     "devicemanager.users",
@@ -102,8 +103,11 @@ SPECTACULAR_SETTINGS = {
     ],
 }
 
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
+SOCIALACCOUNT_PROVIDERS = {}
+
+if env("GOOGLE_CLIENT_ID") and env("GOOGLE_CLIENT_SECRET"):
+    INSTALLED_APPS.append("allauth.socialaccount.providers.google")
+    SOCIALACCOUNT_PROVIDERS["google"] = {
         "APP": {
             "client_id": env("GOOGLE_CLIENT_ID"),
             "secret": env("GOOGLE_CLIENT_SECRET"),
@@ -113,22 +117,29 @@ SOCIALACCOUNT_PROVIDERS = {
             "profile",
             "email",
         ],
-    },
-    "github": {
+    }
+
+
+if env("GITHUB_CLIENT_ID") and env("GITHUB_CLIENT_SECRET"):
+    INSTALLED_APPS.append("allauth.socialaccount.providers.github")
+    SOCIALACCOUNT_PROVIDERS["github"] = {
         "APP": {
             "client_id": env("GITHUB_CLIENT_ID"),
             "secret": env("GITHUB_CLIENT_SECRET"),
         },
         "SCOPE": ["user", "profile", "email", "oidc"],
-    },
-    "authentik": {
+    }
+
+if env("AUTHENTIK_CLIENT_ID") and env("AUTHENTIK_CLIENT_SECRET"):
+    INSTALLED_APPS.append("devicemanager.users.providers.authentik")
+    SOCIALACCOUNT_PROVIDERS["authentik"] = {
         "APP": {
             "client_id": env("AUTHENTIK_CLIENT_ID"),
             "secret": env("AUTHENTIK_CLIENT_SECRET"),
         },
         "SCOPE": ["user", "profile", "email", "user:email"],
-    },
-}
+    }
+
 
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
@@ -180,7 +191,7 @@ DATABASES = {
         "USER": env("MARIADB_USER"),
         "PASSWORD": env("MARIADB_PASSWORD"),
         "HOST": env("MARIADB_HOST"),
-        "PORT": 3306,
+        "PORT": env("MARIADB_PORT"),
     }
 }
 
