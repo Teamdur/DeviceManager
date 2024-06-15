@@ -17,16 +17,20 @@ $ echo 'export PATH="$HOME/.mise/bin:$PATH"' >> ~/.bashrc; echo 'export PATH="$H
 
 Restart your terminal
 
-* Restart Bash
+- Restart Bash
+
 ```bash
 $ exec bash
 ```
-* Restart Zsh
+
+- Restart Zsh
+
 ```bash
 $ exec zsh
 ```
 
 Verify the installation by running the following command:
+
 ```bash
 $ mise version
 2024.4.5 linux-arm64 (d60d850 2024-04-15)
@@ -34,7 +38,7 @@ $ mise version
 
 #### System dependencies
 
-* Debian/Ubuntu
+- Debian/Ubuntu
 
 ```bash
 sudo apt install build-essential gdb lcov pkg-config \
@@ -86,10 +90,10 @@ $ mise run dev
 The following environment variables are required to run the app in production:
 
 - `SECRET_KEY`: A secret key for the app
-- `MYSQL_USER`: The database user
-- `MYSQL_PASSWORD`: The database password
-- `MYSQL_DATABASE`: The database host
-- `MYSQL_HOST`: The database host address
+- `MARIADB_USER`: The database user
+- `MARIADB_PASSWORD`: The database password
+- `MARIADB_DATABASE`: The database host
+- `MARIADB_HOST`: The database host address
 
 For email sending, the following environment variables are required:
 
