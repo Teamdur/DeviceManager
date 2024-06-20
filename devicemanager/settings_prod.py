@@ -3,8 +3,18 @@ import environ
 from devicemanager.settings import *  # noqa
 
 env = environ.Env(
-    SECRET_KEY=(str, "django-insecure-&#w*b7*0v3z4z62l989)sjk6wqdj_%v-)ty(7iakr+nw9&4i(%"),
+    SECRET_KEY=(
+        str,
+        "django-insecure-&#w*b7*0v3z4z62l989)sjk6wqdj_%v-)ty(7iakr+nw9&4i(%",
+    ),
     EMAIL_BACKEND=(str, "django.core.mail.backends.filebased.EmailBackend"),
+    CSRF_TRUSTED_ORIGINS=(
+        list,
+        [
+            "https://devicemanager.homa-server.eu",
+            "https://device-manager.critteros.dev",
+        ],
+    ),
 )
 
 DEBUG = False
@@ -12,7 +22,7 @@ ALLOWED_HOSTS = ["*"]
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
-CSRF_TRUSTED_ORIGINS = ["https://devicemanager.homa-server.eu", "https://device-manager.critteros.dev"]
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")  # noqa: F405
 DEFAULT_HTTP_PROTOCOL = "https"
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
