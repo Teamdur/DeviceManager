@@ -13,6 +13,7 @@ env = environ.Env(
         [
             "https://devicemanager.homa-server.eu",
             "https://device-manager.critteros.dev",
+            "http://localhost:9000",
         ],
     ),
 )
