@@ -12,9 +12,8 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import Concat
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponseRedirect
 from django.urls import reverse
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from devicemanager.inventory.filters import (
@@ -133,24 +132,9 @@ class DeviceAdmin(admin.ModelAdmin):
     @admin.action(description=_("Generate QR Codes"))
     def generate_qr_codes(self, request: HttpRequest, queryset: QuerySet):
         selected_ids = queryset.values_list("pk", flat=True)
-        url = reverse("inventory:qr-generate")
-
-        # Create a hidden form to submit the POST request
-        # This ensure that we don't have to deal with extremly long URLs of IDs
-        html = """
-        <form id="qr-generate-form" action="{url}" method="post" style="display:none;">
-            {csrf_token}
-            <input type="hidden" name="ids" value="{ids}">
-        </form>
-        <script type="text/javascript">
-            document.getElementById('qr-generate-form').submit();
-        </script>
-        """.format(
-            url=url,
-            csrf_token=f'<input type="hidden" name="csrfmiddlewaretoken" value="{request.COOKIES["csrftoken"]}">',
-            ids=",".join(str(id) for id in selected_ids),
+        return HttpResponseRedirect(
+            reverse("inventory:qr-generate") + f"?ids={','.join(str(id) for id in selected_ids)}"
         )
-        return HttpResponse(mark_safe(html))
 
     @admin.display(description=_("Current Rental"))
     def current_rental(self, obj: Device) -> str:
